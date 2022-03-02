@@ -49,9 +49,9 @@ end
 module StateCheck : StateSig = State
 
 module type AuthorSig = sig
-  val hours_worked : int
+  val hours_worked : int list
 end
 
 module AuthorCheck : AuthorSig = Author
 
-let _ = if Author.hours_worked < 0 then exit 1
+let _ = if List.exists (fun x -> x < 0) Author.hours_worked then exit 1
