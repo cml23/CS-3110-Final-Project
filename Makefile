@@ -1,4 +1,5 @@
 .PHONY: test check
+MAIN=main.byte
 
 build:
 	dune build
@@ -10,7 +11,7 @@ test:
 	OCAMLRUNPARAM=b dune exec src/test
 
 play:
-	OCAMLRUNPARAM=b dune exec bin/main.exe
+	$(OCAMLBUILD) src/$(MAIN) && OCAMLRUNPARAM=b ./$(MAIN)
 
 check:
 	@bash check.sh
