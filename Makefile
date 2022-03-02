@@ -7,7 +7,7 @@ utop:
 	OCAMLRUNPARAM=b dune utop src
 
 test:
-	OCAMLRUNPARAM=b dune exec src/test.exe
+	OCAMLRUNPARAM=b dune exec src/test
 
 play:
 	OCAMLRUNPARAM=b dune exec bin/main.exe
@@ -19,12 +19,12 @@ finalcheck:
 	@bash check.sh final
 
 zip:
-	rm -f adventure.zip
-	zip -r adventure.zip . -x@exclude.lst
+	rm -f checkers.zip
+	zip -r checkers.zip . -x@exclude.lst
 
 clean:
 	dune clean
-	rm -f adventure.zip
+	rm -f checkers.zip
 
 doc:
 	dune build @doc
