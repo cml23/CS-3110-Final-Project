@@ -1,11 +1,5 @@
 (** Parsing of player commands. *)
 
-(**********************************************************************
- * DO NOT CHANGE THIS FILE
- * It is part of the interface the course staff will use to test your
- * submission.
- **********************************************************************)
-
 type object_phrase = string list
 (** The type [object_phrase] represents the object phrase that can be
     part of a player command. Each element of the list represents a word

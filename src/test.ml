@@ -1,7 +1,7 @@
 open OUnit2
 open Adventure
 open Command
-open State
+open GameState
 
 (********************************************************************
    Here are some helper functions for your testing of set-like lists.
