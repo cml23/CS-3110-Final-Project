@@ -15,14 +15,11 @@ val init_state : Board.t -> t
 val get_board : t -> Board.t
 (** [get_board t] returns the board stored in state [t] for drawing. *)
 
-val current_room_id : t -> string
-(** [current_room_id st] is the identifier of the room in which the
-    adventurer currently is located in state [st]. *)
+val game_over : t -> bool
+(** [game_over t] returns whether a player has won or not *)
 
-val visited : t -> string list
-(** [visited st] is a set-like list of the room identifiers the
-    adventurer has visited in state [st]. The adventurer has visited a
-    room [rm] if their current room location is or has ever been [rm]. *)
+val get_victor : t -> bool
+(** [get_victor t] returns which player has won or not *)
 
 (** The type representing the result of an attempted movement. *)
 type result =
