@@ -1,16 +1,19 @@
-(** Representation of dynamic adventure state.
+(** Representation of dynamic game state.
 
-    This module represents the state of an adventure as it is being
-    played, including the adventurer's current room, the rooms that have
-    been visited, and functions that cause the state to change. *)
+    This module represents the current state of the board, modifies it
+    based on moves and their legality, and checks whether a player has
+    lost or not. *)
 
 type t
-(** The abstract type of values representing the game state. *)
+(** The abstract value representing the game state, including a board,
+    win, and loss condition. *)
 
-val init_state : Adventure.t -> t
-(** [init_state a] is the initial state of the game when playing
-    adventure [a]. In that state the adventurer is currently located in
-    the starting room, and they have visited only that room. *)
+val init_state : Board.t -> t
+(** [init_state Board.t] creates an initial game state based on
+    [Board.t]. *)
+
+val get_board : t -> Board.t
+(** [get_board t] returns the board stored in state [t] for drawing. *)
 
 val current_room_id : t -> string
 (** [current_room_id st] is the identifier of the room in which the
