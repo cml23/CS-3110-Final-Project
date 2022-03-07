@@ -1,5 +1,5 @@
 .PHONY: test check
-MAIN=main.byte
+CANVAS=$(src/canvas.ml)
 
 build:
 	dune build
@@ -11,7 +11,7 @@ test:
 	OCAMLRUNPARAM=b dune exec src/test
 
 play:
-	$(OCAMLBUILD) src/$(MAIN) && OCAMLRUNPARAM=b ./$(MAIN)
+	$(OCAMLBUILD) src/$(CANVAS) && OCAMLRUNPARAM=b ./$(CANVAS)
 
 check:
 	@bash check.sh
