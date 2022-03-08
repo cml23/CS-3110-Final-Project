@@ -9,10 +9,10 @@ utop:
 	OCAMLRUNPARAM=b dune utop src
 
 test:
-	OCAMLRUNPARAM=b dune exec src/test.ml
+	OCAMLRUNPARAM=b dune exec test/test.exe
 
 play:
-	OCAMLRUNPARAM=b dune exec src/canvas.exe
+	OCAMLRUNPARAM=b dune exec main/main.exe
 
 check:
 	@bash check.sh

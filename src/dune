@@ -1,9 +1,4 @@
 (library
- (modules author board command constants state canvas)
  (name game)
  (public_name Game)
  (libraries yojson ANSITerminal ounit2 graphics camlimages))
-
-(executable
- (modules main test)
- (name main))
