@@ -4,10 +4,7 @@ type piece = {
   is_royal : bool;
 }
 
-type tile =
-  | Some of piece
-  | None
-
+type tile = piece option
 type t = tile array * int
 (* a board can have any rectangular shape. The number of tiles per row
    (i.e., the number of columns) is given by the second number in the
@@ -99,6 +96,25 @@ let piece_of_xy (b : t) x y =
 let pieces_of_player (board : t) (pl : string) : string list =
   raise (Failure "Unimplemented: Board.pieces_of_player")
 
-(* TODO: functions for the neighbors of tile; individual functions for
-   getting each of 4 neighbors: return None if nothing there, or Some of
-   (x,y) *)
+let rec idx_pc_aux tiles pc i : int option =
+  if i >= Array.length tiles then None
+  else if tiles.(i) = Some pc then Some i
+  else idx_pc_aux tiles pc (i + 1)
+
+let xy_of_pc (b : t) pc =
+  let idx = idx_pc_aux (fst b) pc 0 in
+  match idx with
+  | None -> None
+  | Some i -> Some (get_x b i, get_y b i)
+
+let up_r b x y =
+  if x < dim_x b && y < dim_y b then Some (x + 1, y + 1) else None
+
+let up_l b x y =
+  if x > 1 && y < dim_y b then Some (x - 1, y + 1) else None
+
+let down_r b x y =
+  if x < dim_x b && y > 1 then Some (x + 1, y - 1) else None
+
+let down_l (b : t) x y =
+  if x > 1 && y > 1 then Some (x - 1, y - 1) else None

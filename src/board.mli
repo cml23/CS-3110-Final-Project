@@ -44,4 +44,28 @@ val piece_of_xy : t -> int -> int -> piece option
 
 val pieces_of_player : t -> string -> string list
 (** [pieces_of_player b pl] is the list of pieces on board [b] belonging
-    to player [pl]*)
+    to player [pl]. *)
+
+val xy_of_pc : t -> piece -> (int * int) option
+(** [xy_of_pc b pc] is Some (x,y) where x and y are the coordinates of
+    piece [pc] on board [b] if it exists; otherwise the result is None. *)
+
+val up_r : t -> int -> int -> (int * int) option
+(** [up_r b x y] is Some (x_new, y_new) where x_new and y_new are the
+    coordinates of the tile to the upper right of the tile at (x, y) if
+    the new tile exists; otherwise the result is None. *)
+
+val up_l : t -> int -> int -> (int * int) option
+(** [up_l b x y] is Some (x_new, y_new) where x_new and y_new are the
+    coordinates of the tile to the upper left of the tile at (x, y) if
+    the new tile exists; otherwise the result is None. *)
+
+val down_r : t -> int -> int -> (int * int) option
+(** [down_r b x y] is Some (x_new, y_new) where x_new and y_new are the
+    coordinates of the tile to the lower right of the tile at (x, y) if
+    the new tile exists; otherwise the result is None. *)
+
+val down_l : t -> int -> int -> (int * int) option
+(** [down_l b x y] is Some (x_new, y_new) where x_new and y_new are the
+    coordinates of the tile to the lower left of the tile at (x, y) if
+    the new tile exists; otherwise the result is None. *)
