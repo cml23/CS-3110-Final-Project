@@ -1,5 +1,6 @@
 .PHONY: test check
-CANVAS=$(src/canvas.ml)
+SRC=$(src/)
+CANVAS=$(canvas.ml)
 
 build:
 	dune build
@@ -8,10 +9,10 @@ utop:
 	OCAMLRUNPARAM=b dune utop src
 
 test:
-	OCAMLRUNPARAM=b dune exec src/test
+	OCAMLRUNPARAM=b dune exec src/test.ml
 
 play:
-	$(OCAMLBUILD) src/$(CANVAS) && OCAMLRUNPARAM=b ./$(CANVAS)
+	OCAMLRUNPARAM=b dune exec src/canvas.exe
 
 check:
 	@bash check.sh

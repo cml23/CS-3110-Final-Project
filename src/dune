@@ -2,3 +2,6 @@
  (name game)
  (public_name Game)
  (libraries yojson ANSITerminal ounit2 graphics camlimages))
+
+(executable
+ (name canvas))

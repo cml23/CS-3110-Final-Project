@@ -18,15 +18,15 @@ val get_board : t -> Board.t
 val game_over : t -> bool
 (** [game_over t] returns whether a player has won or not *)
 
-val get_victor : t -> bool
+val get_victor : t -> string
 (** [get_victor t] returns which player has won or not *)
 
 (** The type representing the result of an attempted movement. *)
-type result =
+type move =
   | Legal of t
   | Illegal
 
-val go : string -> Adventure.t -> t -> result
+val go : string -> Adventure.t -> t -> move
 (** [go exit adv st] is [r] if attempting to go through exit [exit] in
     state [st] and adventure [adv] results in [r]. If [exit] is an exit
     from the adventurer's current room, then [r] is [Legal st'], where
@@ -34,3 +34,5 @@ val go : string -> Adventure.t -> t -> result
     leads. Otherwise, the result is [Illegal].
 
     Effects: none. [go] is not permitted to do any printing. *)
+
+val main : unit -> _
