@@ -17,7 +17,7 @@ type move =
   | Legal of t
   | Illegal
 
-let go : string -> Adventure.t -> t -> move =
+let go : string -> Board.t -> t -> move =
   raise (Failure "Unimplemented: Board.pieces_of_player")
 
 let main () = raise (Failure "Unimplemented: Board.pieces_of_player")

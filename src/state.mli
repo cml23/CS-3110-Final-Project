@@ -26,7 +26,7 @@ type move =
   | Legal of t
   | Illegal
 
-val go : string -> Adventure.t -> t -> move
+val go : string -> Board.t -> t -> move
 (** [go exit adv st] is [r] if attempting to go through exit [exit] in
     state [st] and adventure [adv] results in [r]. If [exit] is an exit
     from the adventurer's current room, then [r] is [Legal st'], where
