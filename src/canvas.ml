@@ -8,41 +8,45 @@ let draw_piece (b : Board.t) (pc : Board.piece) : unit =
 
 (**[draw_tile x y tile_size color] draws a tile of [color] and size
    [tile_size] at position [(x,y)]*)
-let draw_tile
+let rec draw_tile
     (x : int)
     (y : int)
+    (i : int)
     (tile_size : int)
     (color : Graphics.color) : unit =
-  Graphics.set_color color;
-  Graphics.fill_rect x y tile_size tile_size
+  Graphics.fill_rect x y tile_size tile_size;
+  if i = 0 then ()
+  else draw_tile (x + tile_size) y (i - 1) tile_size color
 
 (**[draw_row x y tile_size color cols] draws a row of [num] tiles
    colored with [color] starting at the position [(x,y). ] *)
 let rec draw_row
     (x : int)
     (y : int)
+    (b : Board.t)
     (tile_size : int)
-    (color : Graphics.color)
-    (num : int) : unit =
-  draw_tile x y tile_size color;
-  if num = 0 then ()
-  else draw_row (x + tile_size) y tile_size color (num - 1)
+    (color : Graphics.color) : unit =
+  for i = 1 to Board.dim_x b do
+    draw_tile (x + tile_size) y (Board.dim_x b) tile_size color
+  done
 
 (**[draw_board brd st] draws the board to the game canvas using the
    board configuration [bd].*)
 let rec draw_board
-    (*State.t*) (x : int)
+    (x : int)
     (y : int)
-    (rows : int)
-    (cols : int)
+    (b : Board.t)
+    (y_dim : int)
     (color : Graphics.color)
     (tile_size : int) : unit =
-  draw_row x y tile_size color cols;
-  if rows = 0 then ()
-  else draw_board x (y - tile_size) color (rows - 1) cols tile_size
+  draw_tile x y (Board.dim_x b) tile_size color;
+  if y_dim = 0 then ()
+  else draw_board x (y + tile_size) b (y_dim - 1) tile_size color
 
 let draw st =
   let open Graphics in
   open_graph "";
-  (*draw_board 0 (size_y () - (tile_size - 10)) 8 8 black 40;*)
-  draw_piece Board.init_board { player = 2; id = 1; is_royal = false }
+  let b = Board.init_board in
+  draw_board 50 50 b (Board.dim_y b) black 40
+(*draw_tile 0 0 (Board.init_board |> Board.dim_x) 40 black*)
+(*draw_piece Board.init_board { player = 2; id = 1; is_royal = false*)
