@@ -16,8 +16,9 @@ let game_over (state : t) : bool = state.win_state
 let get_victor (state : t) : string = state.victor
 
 type move =
+  | Continue of t
   | Legal of t
   | Illegal
 
-(* let go : string -> Board.t -> t -> move = raise (Failure
-   "Unimplemented: Board.pieces_of_player") *)
+let update (coord : int * int) (state : t) =
+  raise (Failure "Unimplemented: Board.pieces_of_player")
