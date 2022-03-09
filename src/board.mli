@@ -42,8 +42,12 @@ val piece_of_xy : t -> int -> int -> piece option
 (** [piece_of_idx b x y] is Some the piece located at position (x,y) on
     board b if a piece exists at that position; otherwise it is None. *)
 
-(*val pieces_of_player : t -> string -> string list*)
+val pieces_of_player : t -> int -> piece list
 (** [pieces_of_player b pl] is the list of pieces on board [b] belonging
+    to player [pl]. *)
+
+val num_pcs_of_pl : t -> int -> int
+(** [num_pcs_of_pl b pl] is the number of pieces on board [b] belonging
     to player [pl]. *)
 
 val xy_of_pc : t -> piece -> (int * int) option
