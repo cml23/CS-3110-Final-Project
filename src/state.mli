@@ -12,7 +12,7 @@ val init_state : Board.t -> t
 (** [init_state Board.t] creates an initial game state based on
     [Board.t]. *)
 
-(* val get_board : t -> Board.t *)
+val get_board : t -> Board.t
 (** [get_board t] returns the board stored in state [t] for drawing. *)
 
 val game_over : t -> bool
