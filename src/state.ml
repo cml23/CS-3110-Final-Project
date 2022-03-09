@@ -2,10 +2,12 @@ type t = {
   board : Board.t;
   win_state : bool;
   victor : string;
+  selected : (int * int) list;
 }
+(* Should be [""] for no victor, ["player 1"], and ["player 2"] *)
 
 let init_state (board : Board.t) : t =
-  { board; win_state = false; victor = "" }
+  { board; win_state = false; victor = ""; selected = [] }
 
 (* let get_board (state : t) : Board.t = raise (Failure "Unimplemented:
    Board.pieces_of_player") *)
