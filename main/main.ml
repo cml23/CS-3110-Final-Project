@@ -1,10 +1,6 @@
-(** [play_game f] starts the adventure in file [f]. *)
-let play_game f = raise (Failure "Unimplemented: Main.play_game")
-
-let data_dir_prefix = "data" ^ Filename.dir_sep
-
+open Game
 (** [main ()] prompts for the game to play, then starts it. *)
-let main () = ()
+let main () = Game.Canvas.draw (Game.State.init_state Game.Board.init_board)
 
 (* Execute the game engine. *)
 let () = main ()

@@ -19,8 +19,3 @@ type move =
 
 let go : string -> Board.t -> t -> move =
   raise (Failure "Unimplemented: Board.pieces_of_player")
-
-let main () = raise (Failure "Unimplemented: Board.pieces_of_player")
-(* Canvas.draw (init_state Board.init_board) *)
-
-let () = main ()

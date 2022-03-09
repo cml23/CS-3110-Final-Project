@@ -34,5 +34,3 @@ val go : string -> Board.t -> t -> move
     leads. Otherwise, the result is [Illegal].
 
     Effects: none. [go] is not permitted to do any printing. *)
-
-val main : unit -> _
