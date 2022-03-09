@@ -83,6 +83,7 @@ let init_board : t =
 
 (*let from_json json = raise (Failure "Unimplemented:
   Board.from_json") *)
+
 let get_x (b : t) i = ((i - 1) mod snd b) + 1
 let get_y (b : t) i = ((i - 1) / snd b) + 1
 let get_idx (b : t) x y = (snd b * (y - 1)) + x
@@ -94,8 +95,15 @@ let piece_of_xy (b : t) x y =
   | None -> (None : piece option)
   | Some pc -> (Some pc : piece option)
 
-(*let pieces_of_player (board : t) (pl : string) : string list = raise
-  (Failure "Unimplemented: Board.pieces_of_player")*)
+let pieces_of_player (b : t) pl =
+  Array.fold_left
+    (fun acc el ->
+      match el with
+      | None -> acc
+      | Some p -> if p.player = pl then p :: acc else acc)
+    [] (fst b)
+
+let num_pcs_of_pl b pl = List.length (pieces_of_player b pl)
 
 let rec idx_pc_aux tiles pc i : int option =
   if i >= Array.length tiles then None
