@@ -1,3 +1,5 @@
+(*[swap_color] changes the drawing color from red to black if the
+  current color is black, and vice versa.*)
 let swap_color (c : Graphics.color) : Graphics.color =
   if c = (Graphics.black : Graphics.color) then
     (Graphics.red : Graphics.color)
@@ -46,21 +48,19 @@ let rec draw_board
     (y : int)
     (b : Board.t)
     (y_dim : int)
-    (color : Graphics.color)
-    (tile_size : int) : unit =
+    (tile_size : int)
+    (color : Graphics.color) : unit =
   draw_row x y b (Board.dim_x b) tile_size color;
   Graphics.moveto x y;
   if y_dim = 1 then ()
   else
-    draw_board x (y + tile_size) b (y_dim - 1)
+    draw_board x (y + tile_size) b (y_dim - 1) tile_size
       (swap_color (color : Graphics.color))
-      tile_size
 
 let draw st =
   Graphics.open_graph "";
   let b = Board.init_board in
-  draw_board 50 50 b (Board.dim_y b)
+  draw_board 50 50 b (Board.dim_y b) 40
     (Graphics.black : Graphics.color)
-    40
 (*draw_tile 0 0 (Board.init_board |> Board.dim_x) 40 black*)
 (*draw_piece Board.init_board { player = 2; id = 1; is_royal = false*)
