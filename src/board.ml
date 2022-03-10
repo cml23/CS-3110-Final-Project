@@ -107,7 +107,7 @@ let num_pcs_of_pl b pl = List.length (pieces_of_player b pl)
 
 let rec idx_pc_aux tiles pc i : int option =
   if i >= Array.length tiles then None
-  else if tiles.(i) = Some pc then Some i
+  else if tiles.(i) = Some pc then Some (i + 1)
   else idx_pc_aux tiles pc (i + 1)
 
 let xy_of_pc (b : t) pc =
