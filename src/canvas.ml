@@ -1,3 +1,6 @@
+let swap_color (c : Graphics.color) =
+  if c = Graphics.black then Graphics.red else Graphics.black
+
 (**[draw_piece pc x y] draws [pc] to the tile at [x] and [y].*)
 let draw_piece (b : Board.t) (pc : Board.piece) : unit =
   let open Graphics in
@@ -14,9 +17,9 @@ let rec draw_tile
     (i : int)
     (tile_size : int)
     (color : Graphics.color) : unit =
-  Graphics.fill_rect x y tile_size tile_size;
-  if i = 0 then ()
-  else draw_tile (x + tile_size) y (i - 1) tile_size color
+  Graphics.moveto x y;
+  Graphics.set_color color;
+  Graphics.fill_rect x y tile_size tile_size
 
 (**[draw_row x y tile_size color cols] draws a row of [num] tiles
    colored with [color] starting at the position [(x,y). ] *)
@@ -24,11 +27,12 @@ let rec draw_row
     (x : int)
     (y : int)
     (b : Board.t)
+    (i : int)
     (tile_size : int)
     (color : Graphics.color) : unit =
-  for i = 1 to Board.dim_x b do
-    draw_tile (x + tile_size) y (Board.dim_x b) tile_size color
-  done
+  draw_tile x y (Board.dim_x b) tile_size color;
+  if i = 1 then ()
+  else draw_row (x + tile_size) y b (i - 1) tile_size (swap_color color)
 
 (**[draw_board brd st] draws the board to the game canvas using the
    board configuration [bd].*)
@@ -39,9 +43,12 @@ let rec draw_board
     (y_dim : int)
     (color : Graphics.color)
     (tile_size : int) : unit =
-  draw_tile x y (Board.dim_x b) tile_size color;
-  if y_dim = 0 then ()
-  else draw_board x (y + tile_size) b (y_dim - 1) tile_size color
+  draw_row x y b (Board.dim_x b) tile_size color;
+  Graphics.moveto x y;
+  if y_dim = 1 then ()
+  else
+    draw_board x (y + tile_size) b (y_dim - 1) tile_size
+      (swap_color color)
 
 let draw st =
   let open Graphics in
