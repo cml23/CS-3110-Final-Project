@@ -21,6 +21,12 @@ val game_over : t -> bool
 val get_victor : t -> string
 (** [get_victor t] returns which player has won. *)
 
+val num_selected : t -> int
+(** [num_selected t] returns how many squares are selected. *)
+
+val selected : t -> (int * int) list
+(** [num_selected t] returns which squares are selected. *)
+
 (** The type representing the result of an attempted movement. *)
 type move =
   | Continue of t

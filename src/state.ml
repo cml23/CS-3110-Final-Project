@@ -22,21 +22,22 @@ let check_victor (state : t) : t =
     { state with game_over = false; victor = "player 1" }
   else state
 
+let num_selected (state : t) : int = List.length state.selected
+let selected (state : t) : (int * int) list = state.selected
+
 type move =
   | Continue of t
   | Legal of t
   | Illegal of t
 
-let num_selected (state : t) : int = List.length state.selected
+let pc_exist (state : t) (coord : int * int) : bool =
+  match coord with
+  | x, y -> (
+      match piece_of_xy state.board x y with
+      | Some piece -> true
+      | None -> false)
 
 let update (coord : int * int) (state : t) =
-  if
-    num_selected state = 0
-    &&
-    match coord with
-    | x, y -> (
-        match piece_of_xy state.board x y with
-        | Some piece -> true
-        | None -> false)
-  then Continue { state with selected = coord :: state.selected }
+  if num_selected state = 0 && pc_exist state coord then
+    Continue { state with selected = coord :: state.selected }
   else Illegal state

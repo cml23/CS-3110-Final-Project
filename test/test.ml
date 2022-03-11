@@ -118,7 +118,57 @@ let board_tests =
   ]
 
 (* Add helper functions for testing State here.*)
-let state_tests = []
+let rec print_selected (selected : (int * int) list) =
+  match selected with
+  | [] -> ""
+  | (x, y) :: t ->
+      "(" ^ string_of_int x ^ ", " ^ string_of_int y ^ ")"
+      ^ print_selected t
+
+let print_state (state : Game.State.t) =
+  "{game_over="
+  ^ (state |> game_over |> string_of_bool)
+  ^ ";\n victor=" ^ (state |> get_victor) ^ ";\n # squares selected="
+  ^ (state |> num_selected |> string_of_int)
+  ^ "}"
+
+(* let rec print_move (move : Game.State.move) = match move with | _ ->
+   print_state (move state) *)
+
+let game_over_test
+    (name : string)
+    (state : Game.State.t)
+    (exp_out : bool) : test =
+  name >:: fun _ ->
+  assert_equal exp_out (game_over state) ~printer:string_of_bool
+
+let victor_test
+    (name : string)
+    (state : Game.State.t)
+    (exp_out : string) : test =
+  name >:: fun _ -> assert_equal exp_out (get_victor state)
+
+let selected_test
+    (name : string)
+    (state : Game.State.t)
+    (exp_out : (int * int) list) : test =
+  name >:: fun _ -> assert_equal exp_out (selected state)
+
+let update_test
+    (name : string)
+    (state : Game.State.t)
+    (exp_out : (int * int) list) : test =
+  name >:: fun _ -> assert_equal exp_out (selected state)
+
+let def_st = init_state def_bd
+
+let state_tests =
+  [
+    game_over_test "initial state game_over" def_st false;
+    victor_test "initial state game_over" def_st "";
+    selected_test "initial state game_over" def_st []
+    (* update_test "initial state game_over" def_st false; *);
+  ]
 
 (* Add helper functions for testing Canvas here.*)
 let canvas_tests = []
