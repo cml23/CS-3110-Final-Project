@@ -127,3 +127,6 @@ let down_r b x y =
 
 let down_l (b : t) x y =
   if x > 1 && y > 1 then Some (x - 1, y - 1) else None
+
+(* TODO: Add function to delete piece from board. *)
+(* TODO: Add function to return whether a pc exists at x,y. *)
