@@ -23,9 +23,8 @@ let draw_piece
 (* match Board.xy_of_pc b pc with | Some (x, y) -> fill_ellipse x y 40
    40 | None -> ()*)
 
-(**[draw_tile x y row col b tile_size color] draws the tile
-   [(row,
-   col)] of [color] and size [tile_size] at position [(x,y)]*)
+(**[draw_tile x y row col b tile_size color] draws the tile [(row,col)]
+   of [color] and size [tile_size] at position [(x,y)]*)
 let rec draw_tile
     (x : int)
     (y : int)
@@ -81,5 +80,3 @@ let draw st =
   let b = Board.init_board in
   draw_board 130 80 1 1 b (Board.dim_y b) Constants.tile_size
     (Graphics.black : Graphics.color)
-(*draw_tile 0 0 (Board.init_board |> Board.dim_x) 40 black*)
-(*draw_piece Board.init_board { player = 2; id = 1; is_royal = false*)
