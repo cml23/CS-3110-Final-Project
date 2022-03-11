@@ -5,15 +5,22 @@ type t = {
   game_over : bool;
   victor : string;
   selected : (int * int) list;
+  legals : (int * int * piece option) list;
 }
 (* Should be [""] for no victor, ["player 1"], and ["player 2"] *)
 
 let init_state (board : Board.t) : t =
-  { board; game_over = false; victor = ""; selected = [] }
+  { board; game_over = false; victor = ""; selected = []; legals = [] }
 
 let get_board (state : t) : Board.t = state.board
 let game_over (state : t) : bool = state.game_over
 let get_victor (state : t) : string = state.victor
+
+let get_legals (state : t) : (int * int * piece option) list =
+  state.legals
+
+let num_selected (state : t) : int = List.length state.selected
+let selected (state : t) : (int * int) list = state.selected
 
 let check_victor (state : t) : t =
   if Board.num_pcs_of_pl state.board 1 = 0 then
@@ -21,9 +28,6 @@ let check_victor (state : t) : t =
   else if Board.num_pcs_of_pl state.board 2 = 0 then
     { state with game_over = false; victor = "player 1" }
   else state
-
-let num_selected (state : t) : int = List.length state.selected
-let selected (state : t) : (int * int) list = state.selected
 
 type move =
   | Continue of t
@@ -43,6 +47,10 @@ let nb_match nbf (start : int * int) (finish : int * int) : bool =
       match nbf x y with
       | Some final -> final = finish
       | None -> false)
+
+let calculate_legals (state : t) (start : int * int) : (int * int) list
+    =
+  []
 
 let update (coord : int * int) (state : t) =
   if num_selected state = 0 && pc_exist state coord then
