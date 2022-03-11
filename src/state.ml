@@ -37,7 +37,18 @@ let pc_exist (state : t) (coord : int * int) : bool =
       | Some piece -> true
       | None -> false)
 
+let nb_match nbf (start : int * int) (finish : int * int) : bool =
+  match start with
+  | x, y -> (
+      match nbf x y with
+      | Some final -> final = finish
+      | None -> false)
+
 let update (coord : int * int) (state : t) =
   if num_selected state = 0 && pc_exist state coord then
     Continue { state with selected = coord :: state.selected }
+  else if num_selected state = 1 then
+    if nb_match (up_l state.board) (List.nth state.selected 0) coord
+    then Continue state
+    else Illegal state
   else Illegal state
