@@ -1,1 +1,12 @@
-You will need to install the following packages: Graphics, CamlImages. If you are running Windows, you will also need to install .
+You will need to install the following packages: Graphics, CamlImages. 
+
+If you are running Windows, you will also need to run the following commands:
+sudo apt-get install pkg-config
+opam install graphics
+opam install user-setup
+opam user-setup install
+Follow these instructions to download an X-server:
+https://www.youtube.com/watch?v=4SZXbl9KVsw
+eval $(opam env)
+export DISPLAY=$(awk '/nameserver / {print $2; exit}' /etc/resolv.conf 2>/dev/null):0
+export LIBGL_ALWAYS_INDIRECT=1
