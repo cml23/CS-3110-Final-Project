@@ -128,5 +128,14 @@ let down_r b x y =
 let down_l (b : t) x y =
   if x > 1 && y > 1 then Some (x - 1, y - 1) else None
 
-(* TODO: Add function to delete piece from board. *)
-(* TODO: Add function to return whether a pc exists at x,y. *)
+let copy_bd (b : t) : t = (Array.copy (fst b), snd b)
+
+let del_pc b x y =
+  let new_bd = copy_bd b in
+  Array.set (fst new_bd) (get_idx new_bd x y - 1) None;
+  new_bd
+
+let pc_exists b x y =
+  match piece_of_xy b x y with
+  | None -> false
+  | Some _ -> true

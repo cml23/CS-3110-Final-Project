@@ -27,6 +27,7 @@ let print_pc_opt pc_opt =
   | Some pc -> print_pc pc
 
 let def_bd = init_board
+let def_bd_11del = del_pc def_bd 1 1
 
 let dim_x_test (name : string) (b : Game.Board.t) (exp_out : int) : test
     =
@@ -73,6 +74,15 @@ let neigbor_test
   name >:: fun _ ->
   assert_equal exp_out (adj_fun b x y) ~printer:print_int_pair_opt
 
+let pc_exists_test
+    (name : string)
+    (b : Game.Board.t)
+    (x : int)
+    (y : int)
+    (exp_out : bool) : test =
+  name >:: fun _ ->
+  assert_equal exp_out (pc_exists b x y) ~printer:string_of_bool
+
 let board_tests =
   [
     dim_x_test "default board x-dim" def_bd 8;
@@ -115,6 +125,9 @@ let board_tests =
     neigbor_test "default board; down l of 1,8" down_l def_bd 1 8 None;
     neigbor_test "default board; down l of 8,1" down_l def_bd 8 1 None;
     neigbor_test "default board; down l of 1,1" down_l def_bd 1 1 None;
+    pc_exists_test "default board; pc at 1,1" def_bd 1 1 true;
+    pc_exists_test "default board; pc at 1,1" def_bd 8 8 true;
+    pc_exists_test "default board; del pc at 1,1" def_bd_11del 1 1 false;
   ]
 
 (* Add helper functions for testing State here.*)

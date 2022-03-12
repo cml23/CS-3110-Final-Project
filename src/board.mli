@@ -73,3 +73,14 @@ val down_l : t -> int -> int -> (int * int) option
 (** [down_l b x y] is Some (x_new, y_new) where x_new and y_new are the
     coordinates of the tile to the lower left of the tile at (x, y) if
     the new tile exists; otherwise the result is None. *)
+
+val copy_bd : t -> t
+(** [copy_bd b] is a copy of board [b]. *)
+
+val del_pc : t -> int -> int -> t
+(** [del_pc b x y] is board [b] with the tile at position x,y set to
+    None. *)
+
+val pc_exists : t -> int -> int -> bool
+(** [pc_exists b x y] is true iff there is a piece at position x,y in
+    board [b]. *)
