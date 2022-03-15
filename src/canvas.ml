@@ -75,6 +75,8 @@ let rec draw_board
     draw_board x (y + tile_size) row (col + 1) b (y_dim - 1) tile_size
       (swap_color (color : Graphics.color))
 
+let mouse_input = Failure "Unimplemented: Canvas.mouse_input"
+
 let draw st =
   Graphics.open_graph "";
   let b = Board.init_board in
