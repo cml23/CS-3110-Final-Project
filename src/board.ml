@@ -153,9 +153,7 @@ let rec get_neighbors
   | Some (x_new, y_new) -> (
       match piece_of_xy b x_new y_new with
       | None -> (x_new, y_new) :: get_neighbors b pc x_new y_new f_n
-      | Some pc_new when pc_new.player = 1 ->
-          (x_new, y_new) :: get_neighbors b pc x_new y_new f_n
-      | Some pc_new -> [])
+      | Some _ -> [])
 (* [get_neighbors b pc x y f_n] is the list of neighbors (locations that
    piece [pc] at location x,y could move to on board [b]) in the
    direction given by [f_n]. *)
