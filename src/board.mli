@@ -10,7 +10,8 @@ type t
 
 val init_board : t
 (** [init_board] is the abstract representation of the default 8x8 board
-    at the start of the game. *)
+    at the start of the game. Player 1's pieces are contained in rows
+    where y=1,2,3 and player 2's pieces are in rows where y=6,7,8. *)
 
 (*val from_json : Yojson.Basic.t -> t*)
 (** [from_json j] is the board that [j] represents. Requires: [j] is a
@@ -84,3 +85,17 @@ val del_pc : t -> int -> int -> t
 val pc_exists : t -> int -> int -> bool
 (** [pc_exists b x y] is true iff there is a piece at position x,y in
     board [b]. *)
+
+val poss_moves : t -> piece -> (int * int) list
+(** [poss_moves b pc] is the list of moves that piece [pc] can make on
+    board [b], excluding piece-capturing moves. *)
+
+val poss_captures : t -> piece -> (int * int) list * piece list
+(** [poss_captures b pc] is a pair where the first value is the list of
+    possible x,y locations piece [pc] could move to on board [b] by way
+    of legal single jump captures; the second value is the list of
+    pieces that would be captured by the corresponding move. *)
+
+val add_pc : t -> piece -> int -> int -> t
+(** [add_pc b pc x y] is board [b] with piece [pc] added to position x,y
+    if that piece is empty; otherwise raises NotEmpty. *)
