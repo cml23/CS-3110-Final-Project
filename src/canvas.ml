@@ -85,12 +85,12 @@ let rec find_tile x y start_x start_y b =
     || x < start_x || y < start_y
   then None
   else
-    let tile_y =
+    let tile_x =
       (float_of_int x -. float_of_int start_x)
       /. float_of_int Constants.tile_size
       |> Float.floor |> ( +. ) 1. |> int_of_float
     in
-    let tile_x =
+    let tile_y =
       (float_of_int y -. float_of_int start_y)
       /. float_of_int Constants.tile_size
       |> Float.floor |> ( +. ) 1. |> int_of_float
@@ -100,8 +100,8 @@ let rec find_tile x y start_x start_y b =
     Some
       ( tile_x,
         tile_y,
-        start_x + (tile_x * Constants.tile_size),
-        start_y + (tile_y * Constants.tile_size) )
+        start_x + ((tile_x - 1) * Constants.tile_size),
+        start_y + ((tile_y - 1) * Constants.tile_size) )
 
 (**(**[find_tile x y start_x start_y] is the tile at [(x,y)] on the
    board where the bottom left hand corner of tile (1,1) is at position
@@ -127,6 +127,8 @@ let mouse_input (ev : Graphics.status) (b : Board.t) : unit =
   with
   | None -> ()
   | Some (tile_x, tile_y, draw_x, draw_y) ->
+      print_endline (string_of_int draw_x);
+      print_endline (string_of_int draw_y);
       draw_tile draw_x draw_y tile_x tile_y b Constants.tile_size
         Graphics.green
 
