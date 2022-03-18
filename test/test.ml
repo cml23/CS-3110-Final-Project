@@ -10,10 +10,18 @@ open Game.Canvas
 
 (* Add helper functions for testing Board here.*)
 
+let print_int_pair (p : int * int) =
+  "(" ^ string_of_int (fst p) ^ ", " ^ string_of_int (snd p) ^ ")"
+
 let print_int_pair_opt (p : (int * int) option) =
   match p with
   | None -> "None"
-  | Some (x, y) -> "(" ^ string_of_int x ^ "," ^ string_of_int y ^ ")"
+  | Some (x, y) -> print_int_pair (x, y)
+
+let rec print_int_pair_list (lst : (int * int) list) =
+  match lst with
+  | [] -> ""
+  | h :: t -> print_int_pair h ^ ", " ^ print_int_pair_list t
 
 let print_pc pc =
   "{player=" ^ string_of_int pc.player ^ "; id=" ^ string_of_int pc.id
@@ -83,6 +91,14 @@ let pc_exists_test
   name >:: fun _ ->
   assert_equal exp_out (pc_exists b x y) ~printer:string_of_bool
 
+let poss_moves_test
+    (name : string)
+    (b : Game.Board.t)
+    (pc : piece)
+    (exp_out : (int * int) list) =
+  name >:: fun _ ->
+  assert_equal exp_out (poss_moves b pc) ~printer:print_int_pair_list
+
 let board_tests =
   [
     dim_x_test "default board x-dim" def_bd 8;
@@ -128,6 +144,24 @@ let board_tests =
     pc_exists_test "default board; pc at 1,1" def_bd 1 1 true;
     pc_exists_test "default board; pc at 1,1" def_bd 8 8 true;
     pc_exists_test "default board; del pc at 1,1" def_bd_11del 1 1 false;
+    poss_moves_test "def bd; poss moves of pc at 1,1" def_bd
+      { player = 1; id = 1; is_royal = false }
+      [];
+    poss_moves_test "def bd; poss moves of pc at 1,3" def_bd
+      { player = 1; id = 9; is_royal = false }
+      [ (2, 4) ];
+    poss_moves_test "def bd; poss moves of pc at 7,3" def_bd
+      { player = 1; id = 12; is_royal = false }
+      [ (8, 4); (6, 4) ];
+    poss_moves_test "def bd; poss moves of pc at 2,8" def_bd
+      { player = 2; id = 21; is_royal = false }
+      [];
+    poss_moves_test "def bd; poss moves of pc at 8,6" def_bd
+      { player = 2; id = 16; is_royal = false }
+      [ (7, 5) ];
+    poss_moves_test "def bd; poss moves of pc at 2,6" def_bd
+      { player = 2; id = 17; is_royal = false }
+      [ (3, 5); (1, 5) ];
   ]
 
 (* Add helper functions for testing State here.*)

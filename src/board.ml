@@ -142,7 +142,7 @@ let pc_exists b x y =
   | None -> false
   | Some _ -> true
 
-let rec get_neighbors
+let get_neighbor
     (b : t)
     (pc : piece)
     (x : int)
@@ -152,7 +152,7 @@ let rec get_neighbors
   | None -> []
   | Some (x_new, y_new) -> (
       match piece_of_xy b x_new y_new with
-      | None -> (x_new, y_new) :: get_neighbors b pc x_new y_new f_n
+      | None -> [ (x_new, y_new) ]
       | Some _ -> [])
 (* [get_neighbors b pc x y f_n] is the list of neighbors (locations that
    piece [pc] at location x,y could move to on board [b]) in the
@@ -163,10 +163,10 @@ let poss_moves (b : t) (pc : piece) : (int * int) list =
   | None -> []
   | Some (x, y) ->
       let up_moves =
-        get_neighbors b pc x y up_r @ get_neighbors b pc x y up_l
+        get_neighbor b pc x y up_r @ get_neighbor b pc x y up_l
       in
       let down_moves =
-        get_neighbors b pc x y down_r @ get_neighbors b pc x y down_l
+        get_neighbor b pc x y down_r @ get_neighbor b pc x y down_l
       in
       if pc.is_royal then up_moves @ down_moves
       else if pc.player = 1 then up_moves
