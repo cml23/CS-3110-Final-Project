@@ -189,7 +189,7 @@ let print_state (state : Game.State.t) =
   "{game_over="
   ^ (state |> game_over |> string_of_bool)
   ^ ";\n victor=" ^ (state |> get_victor) ^ ";\n # squares selected="
-  ^ (state |> num_selected |> string_of_int)
+  ^ (state |> unselected |> string_of_bool)
   ^ "}"
 
 (* let rec print_move (move : Game.State.move) = match move with | _ ->
@@ -208,17 +208,15 @@ let victor_test
     (exp_out : string) : test =
   name >:: fun _ -> assert_equal exp_out (get_victor state)
 
-let selected_test
+let unselected_test
     (name : string)
     (state : Game.State.t)
-    (exp_out : (int * int) list) : test =
-  name >:: fun _ -> assert_equal exp_out (selected state)
+    (exp_out : bool) : test =
+  name >:: fun _ -> assert_equal exp_out (unselected state)
 
-let update_test
-    (name : string)
-    (state : Game.State.t)
-    (exp_out : (int * int) list) : test =
-  name >:: fun _ -> assert_equal exp_out (selected state)
+(* let update_test (name : string) (state : Game.State.t) (exp_out :
+   (int * int) list) : test = name >:: fun _ -> assert_equal exp_out
+   (selected state) *)
 
 let def_st = init_state def_bd
 
@@ -226,7 +224,7 @@ let state_tests =
   [
     game_over_test "initial state game_over" def_st false;
     victor_test "initial state game_over" def_st "";
-    selected_test "initial state game_over" def_st []
+    unselected_test "initial state game_over" def_st true
     (* update_test "initial state game_over" def_st false; *);
   ]
 
