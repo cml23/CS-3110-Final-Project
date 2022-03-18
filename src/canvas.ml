@@ -78,29 +78,47 @@ let rec draw_board
 (**[find_tile x y start_x start_y] is the tile at [(x,y)] on the board
    where the bottom left hand corner of tile (1,1) is at position
    [(start_x, start_y)]*)
-let find_tile x y start_x start_y b =
+let rec find_tile x y start_x start_y b =
   if
     x > start_x + (Board.dim_x b * Constants.tile_size)
     || y > start_y + (Board.dim_y b * Constants.tile_size)
+    || x < start_x || y < start_y
   then None
   else
-    let tile_x =
+    let tile_y =
       (float_of_int x -. float_of_int start_x)
       /. float_of_int Constants.tile_size
-      |> Float.round |> int_of_float
+      |> Float.floor |> ( +. ) 1. |> int_of_float
     in
-    let tile_y =
+    let tile_x =
       (float_of_int y -. float_of_int start_y)
       /. float_of_int Constants.tile_size
-      |> Float.round |> int_of_float
+      |> Float.floor |> ( +. ) 1. |> int_of_float
     in
+    print_endline (string_of_int tile_x);
+    print_endline (string_of_int tile_y);
     Some
       ( tile_x,
         tile_y,
-        (((Board.dim_x b * Constants.tile_size) - start_x) / tile_x)
-        - Constants.tile_size,
-        (((Board.dim_y b * Constants.tile_size) - start_y) / tile_y)
-        - Constants.tile_size )
+        start_x + (tile_x * Constants.tile_size),
+        start_y + (tile_y * Constants.tile_size) )
+
+(**(**[find_tile x y start_x start_y] is the tile at [(x,y)] on the
+   board where the bottom left hand corner of tile (1,1) is at position
+   [(start_x, start_y)]*) let find_tile x y start_x start_y b = if x >
+   start_x + (Board.dim_x b * Constants.tile_size) || y > start_y +
+   (Board.dim_y b * Constants.tile_size) then None else let tile_x =
+   (float_of_int x -. float_of_int start_x) /. float_of_int
+   Constants.tile_size |> Float.round |> ( +. ) 1. |> int_of_float in
+   let tile_y = (float_of_int y -. float_of_int start_y) /. float_of_int
+   Constants.tile_size |> Float.round |> ( +. ) 1. |> int_of_float in
+   print_endline (string_of_int tile_x); print_endline (string_of_int
+   tile_y); Some ( tile_x, tile_y, (((Board.dim_x b *
+   Constants.tile_size) - start_x) / tile_x)
+
+   - Constants.tile_size, (((Board.dim_y b * Constants.tile_size) -
+     start_y) / tile_y)
+   - Constants.tile_size )*)
 
 let mouse_input (ev : Graphics.status) (b : Board.t) : unit =
   match
