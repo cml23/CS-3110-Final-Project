@@ -10,6 +10,6 @@ val draw : State.t -> unit
 (**[draw st] draws all elements associated with the current game state
    to the game canvas.*)
 
-val mouse_input : Graphics.status -> unit
+val mouse_input : Graphics.status -> Board.t -> unit
 (**[mouse_input ev] handles the user mouse input based on information
    given by the status [ev]*)

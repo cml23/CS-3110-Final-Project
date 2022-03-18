@@ -94,12 +94,27 @@ let find_tile x y start_x start_y b =
       /. float_of_int Constants.tile_size
       |> Float.round |> int_of_float
     in
-    Board.piece_of_xy b tile_x tile_y
+    Some
+      ( tile_x,
+        tile_y,
+        (((Board.dim_x b * Constants.tile_size) - start_x) / tile_x)
+        - Constants.tile_size,
+        (((Board.dim_y b * Constants.tile_size) - start_y) / tile_y)
+        - Constants.tile_size )
 
-let mouse_input = Failure "Unimplemented: Canvas.mouse_input"
+let mouse_input (ev : Graphics.status) (b : Board.t) : unit =
+  match
+    find_tile ev.mouse_x ev.mouse_y Constants.start_x Constants.start_y
+      b
+  with
+  | None -> ()
+  | Some (tile_x, tile_y, draw_x, draw_y) ->
+      draw_tile draw_x draw_y tile_x tile_y b Constants.tile_size
+        Graphics.green
 
 let draw st =
   Graphics.open_graph "";
   let b = Board.init_board in
-  draw_board 130 80 1 1 b (Board.dim_y b) Constants.tile_size
+  draw_board Constants.start_x Constants.start_y 1 1 b (Board.dim_y b)
+    Constants.tile_size
     (Graphics.black : Graphics.color)
