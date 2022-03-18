@@ -1,3 +1,5 @@
+exception NotEmpty
+
 type piece = {
   player : int;
   id : int;
@@ -139,3 +141,91 @@ let pc_exists b x y =
   match piece_of_xy b x y with
   | None -> false
   | Some _ -> true
+
+let rec get_neighbors
+    (b : t)
+    (pc : piece)
+    (x : int)
+    (y : int)
+    (f_n : t -> int -> int -> (int * int) option) : (int * int) list =
+  match f_n b x y with
+  | None -> []
+  | Some (x_new, y_new) -> (
+      match piece_of_xy b x_new y_new with
+      | None -> (x_new, y_new) :: get_neighbors b pc x_new y_new f_n
+      | Some _ -> [])
+(* [get_neighbors b pc x y f_n] is the list of neighbors (locations that
+   piece [pc] at location x,y could move to on board [b]) in the
+   direction given by [f_n]. *)
+
+let poss_moves (b : t) (pc : piece) : (int * int) list =
+  match xy_of_pc b pc with
+  | None -> []
+  | Some (x, y) ->
+      let up_moves =
+        get_neighbors b pc x y up_r @ get_neighbors b pc x y up_l
+      in
+      let down_moves =
+        get_neighbors b pc x y down_r @ get_neighbors b pc x y down_l
+      in
+      if pc.is_royal then up_moves @ down_moves
+      else if pc.player = 1 then up_moves
+      else down_moves
+
+let capture
+    (b : t)
+    (pc : piece)
+    (f_n : t -> int -> int -> (int * int) option) :
+    (int * int) list * piece list =
+  match xy_of_pc b pc with
+  | None -> ([], [])
+  | Some (x, y) -> (
+      match f_n b x y with
+      | None -> ([], [])
+      | Some (x1, y1) -> (
+          match piece_of_xy b x1 y1 with
+          | None -> ([], [])
+          | Some pc_opp when pc_opp.player <> pc.player -> (
+              match f_n b x1 y1 with
+              | None -> ([], [])
+              | Some (x2, y2) when piece_of_xy b x2 y2 = None ->
+                  ([ (x2, y2) ], [ pc_opp ])
+              | Some _ -> ([], []))
+          | Some _ -> ([], [])))
+(* [capture b pc f_n] is a pair of empty lists if there is no valid
+   capture for piece [pc] on board [b] in the direction specified by
+   [f_n]; otherwise it is a pair of singleton lists where the first list
+   contains the new x,y position that [pc] would move to by making a
+   capture in the direction of [f_n] and the second list is the captured
+   piece. *)
+
+let poss_captures (b : t) (pc : piece) : (int * int) list * piece list =
+  let up_r_captures = capture b pc up_r in
+  let up_l_captures = capture b pc up_l in
+  let up_captures =
+    ( fst up_r_captures @ fst up_l_captures,
+      snd up_r_captures @ snd up_l_captures )
+  in
+  let down_r_captures = capture b pc down_r in
+  let down_l_captures = capture b pc down_l in
+  let down_captures =
+    ( fst down_r_captures @ fst down_l_captures,
+      snd down_r_captures @ snd down_l_captures )
+  in
+  if pc.is_royal then
+    ( fst up_captures @ fst down_captures,
+      snd up_captures @ snd down_captures )
+  else if pc.player = 1 then up_captures
+  else down_captures
+
+let add_pc (b : t) (pc : piece) (x : int) (y : int) : t =
+  match piece_of_xy b x y with
+  | None ->
+      let new_bd = copy_bd b in
+      Array.set (fst new_bd) (get_idx new_bd x y - 1) (Some pc);
+      new_bd
+  | Some _ -> raise NotEmpty
+
+(* TODO: Encapsulate 4 neighbor functions, get_x, get_y, get_idx. *)
+
+(* TODO: add tests for poss_move, poss_captures, add_pc. *)

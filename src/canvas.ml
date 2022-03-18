@@ -75,6 +75,29 @@ let rec draw_board
     draw_board x (y + tile_size) row (col + 1) b (y_dim - 1) tile_size
       (swap_color (color : Graphics.color))
 
+(**[find_tile x y start_x start_y] is the tile at [(x,y)] on the board
+   where the bottom left hand corner of tile (1,1) is at position
+   [(start_x, start_y)]*)
+let find_tile x y start_x start_y b =
+  if
+    x > start_x + (Board.dim_x b * Constants.tile_size)
+    || y > start_y + (Board.dim_y b * Constants.tile_size)
+  then None
+  else
+    let tile_x =
+      (float_of_int x -. float_of_int start_x)
+      /. float_of_int Constants.tile_size
+      |> Float.round |> int_of_float
+    in
+    let tile_y =
+      (float_of_int y -. float_of_int start_y)
+      /. float_of_int Constants.tile_size
+      |> Float.round |> int_of_float
+    in
+    Board.piece_of_xy b tile_x tile_y
+
+let mouse_input = Failure "Unimplemented: Canvas.mouse_input"
+
 let draw st =
   Graphics.open_graph "";
   let b = Board.init_board in
