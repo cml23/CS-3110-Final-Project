@@ -21,13 +21,17 @@ val game_over : t -> bool
 val get_victor : t -> string
 (** [get_victor t] returns which player has won. *)
 
-val num_selected : t -> int
-(** [num_selected t] returns how many squares are selected. *)
+val unselected : t -> bool
+(** [num_selected t] returns whether a tile has been selected. *)
 
-val selected : t -> (int * int) list
-(** [num_selected t] returns which squares are selected. *)
+val check_victor : t -> t
+(** [check_victor r] returns a new state that has determined whether a
+    player has won or not.*)
 
-(** The type representing the result of an attempted movement. *)
+(** [move] represents the type of state returned. Continue represents
+    that the current player stays the same and requires new input. Legal
+    represents that the board and player has changed. Illegal is similar
+    to Continue but the player has inputted an invalid set of moves.*)
 type move =
   | Continue of t
   | Legal of t
@@ -35,8 +39,8 @@ type move =
 
 val update : int * int -> t -> move
 (** [update coord state] converts a coordinate into a selection or piece
-    movement on the board. [move] is Continue or Legal if the first
-    [coord] provided is contains a piece and the second [coord] provided
-    is an empty square satisfying certain conditions. [move] is Illegal
-    if the first [coord] provided does not contain a piece or the second
+    movement on the board. T is Continue if the first [coord] provided
+    is contains a piece and Legal if the second [coord] provided is an
+    empty square satisfying certain conditions. [move] is Illegal if the
+    first [coord] provided does not contain a piece or the second
     [coord] provided is an illegal checkers move. *)
