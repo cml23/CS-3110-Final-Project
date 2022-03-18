@@ -99,6 +99,13 @@ let poss_moves_test
   name >:: fun _ ->
   assert_equal exp_out (poss_moves b pc) ~printer:print_int_pair_list
 
+let poss_captures_test
+    (name : string)
+    (b : Game.Board.t)
+    (pc : piece)
+    (exp_out : (int * int) list * piece list) =
+  name >:: fun _ -> assert_equal exp_out (poss_captures b pc)
+
 let board_tests =
   [
     dim_x_test "default board x-dim" def_bd 8;
@@ -160,8 +167,14 @@ let board_tests =
       { player = 2; id = 16; is_royal = false }
       [ (7, 5) ];
     poss_moves_test "def bd; poss moves of pc at 2,6" def_bd
-      { player = 2; id = 17; is_royal = false }
+      { player = 2; id = 13; is_royal = false }
       [ (3, 5); (1, 5) ];
+    poss_captures_test "def bd; poss captures of pc at 1,1" def_bd
+      { player = 1; id = 1; is_royal = false }
+      ([], []);
+    poss_captures_test "def bd; poss captures of pc at 2,6" def_bd
+      { player = 2; id = 13; is_royal = false }
+      ([], []);
   ]
 
 (* Add helper functions for testing State here.*)
