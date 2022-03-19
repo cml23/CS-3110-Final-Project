@@ -32,6 +32,7 @@ let get_victor (state : t) : string = state.victor
 let get_moves (state : t) : (int * int) list = state.moves
 let get_caps (state : t) : (int * int) list * piece list = state.caps
 let unselected (state : t) : bool = state.selected = (-1, -1)
+let selected (state : t) : int * int = state.selected
 
 let check_victor (state : t) : t =
   if Board.num_pcs_of_pl state.board 1 = 0 then

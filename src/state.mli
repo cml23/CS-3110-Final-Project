@@ -24,6 +24,9 @@ val get_victor : t -> string
 val unselected : t -> bool
 (** [num_selected t] returns whether a tile has been selected. *)
 
+val selected : t -> int * int
+(** [num_selected t] returns whether a tile has been selected. *)
+
 val check_victor : t -> t
 (** [check_victor r] returns a new state that has determined whether a
     player has won or not.*)
