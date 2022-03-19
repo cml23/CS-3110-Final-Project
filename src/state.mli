@@ -40,7 +40,7 @@ type move =
   | Legal of t
   | Illegal of t
 
-val update : int * int -> t -> move
+val update : t -> int * int -> move
 (** [update coord state] converts a coordinate into a selection or piece
     movement on the board. T is Continue if the first [coord] provided
     is contains a piece and Legal if the second [coord] provided is an

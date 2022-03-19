@@ -163,7 +163,7 @@ type move =
 
 (** [update coord state] returns a move depending on the validity of
     [coord] and the curren [state] *)
-let update (coord : int * int) (state : t) : move =
+let update (state : t) (coord : int * int) : move =
   if valid_fst_click coord state then
     Continue (store_fst_click coord state)
   else if not (unselected state) then
