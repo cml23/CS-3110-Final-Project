@@ -122,7 +122,7 @@ let highlight (ev : Graphics.status) (b : Board.t) =
 
 let draw st =
   Graphics.open_graph "";
-  let b = Board.init_board in
+  let b = State.get_board st in
   draw_board Constants.start_x Constants.start_y 1 1 b (Board.dim_y b)
     Constants.tile_size
     (Graphics.black : Graphics.color)
