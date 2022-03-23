@@ -99,3 +99,12 @@ val poss_captures : t -> piece -> (int * int) list * piece list
 val add_pc : t -> piece -> int -> int -> t
 (** [add_pc b pc x y] is board [b] with piece [pc] added to position x,y
     if that piece is empty; otherwise raises NotEmpty. *)
+
+val promote_pc : t -> piece -> t
+(** [promote b pc] is [b] with the [pc.is_royal] set to true for piece
+    [pc] on board [b]. *)
+
+val is_promotable : t -> piece -> bool
+(** [is_promotable b pc] is whether piece [pc] on board [b] is
+    promotable. This is true if [pc.is_royal=false] and [pc] is at the
+    opposite end of the board from which it started. *)
