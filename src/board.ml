@@ -252,5 +252,5 @@ let is_promotable (b : t) (pc : piece) =
 (* TODO: add tests for poss_move, poss_captures, add_pc. *)
 
 (* FUNCTIONS ADDED BY CASSIDY BELOW. *)
-
+let from_json json = failwith "Unimplemented: from_json"
 (* END FUNCTIONS ADDED BY CASSIDY. *)
