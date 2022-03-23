@@ -29,10 +29,21 @@ let print_pc pc =
   ^ string_of_bool pc.is_royal
   ^ "}"
 
+let rec print_pc_lst lst =
+  match lst with
+  | [] -> ""
+  | h :: t -> print_pc h ^ ", " ^ print_pc_lst t
+
 let print_pc_opt pc_opt =
   match pc_opt with
   | None -> "None"
   | Some pc -> print_pc pc
+
+let print_capture_lst lst =
+  "Final locations: "
+  ^ print_int_pair_list (fst lst)
+  ^ "\n" ^ "Captured pieces: "
+  ^ print_pc_lst (snd lst)
 
 let def_bd = init_board
 let def_bd_11del = del_pc def_bd 1 1
@@ -104,7 +115,16 @@ let poss_captures_test
     (b : Game.Board.t)
     (pc : piece)
     (exp_out : (int * int) list * piece list) =
-  name >:: fun _ -> assert_equal exp_out (poss_captures b pc)
+  name >:: fun _ ->
+  assert_equal exp_out (poss_captures b pc) ~printer:print_capture_lst
+
+let is_promotable_test
+    (name : string)
+    (b : Game.Board.t)
+    (pc : piece)
+    (exp_out : bool) =
+  name >:: fun _ ->
+  assert_equal exp_out (is_promotable b pc) ~printer:string_of_bool
 
 let board_tests =
   [
@@ -175,6 +195,12 @@ let board_tests =
     poss_captures_test "def bd; poss captures of pc at 2,6" def_bd
       { player = 2; id = 13; is_royal = false }
       ([], []);
+    is_promotable_test "def bd; no promotable pc at 1,1" def_bd
+      { player = 1; id = 1; is_royal = false }
+      false;
+    is_promotable_test "def bd; no promotable pc at 8,6" def_bd
+      { player = 2; id = 16; is_royal = false }
+      false;
   ]
 
 (* Add helper functions for testing State here.*)
