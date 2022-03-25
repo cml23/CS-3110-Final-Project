@@ -12,6 +12,7 @@ type t = {
   moves : (int * int) list;
   caps : (int * int) list * piece list;
   player_turn : int;
+  mult_cap : bool;
 }
 (* Should be [""] for no victor, ["player 1"], and ["player 2"] *)
 
@@ -24,6 +25,7 @@ let init_state (board : Board.t) : t =
     moves = [];
     caps = ([], []);
     player_turn = 1;
+    mult_cap = false;
   }
 
 let get_board (state : t) : Board.t = state.board
@@ -105,13 +107,15 @@ let move_cap_pc
   let cd = get_xy_of_pc state rem_pc in
   del_pc bd (fst cd) (snd cd)
 
+let valid_reclick (coord : int * int) (state : t) : bool =
+  pc_exists state.board (fst coord) (snd coord)
+  && (get_pc_of_xy state coord).player = state.player_turn
+
 (** [valid_fst_click coord state] checks whether or not [state] can
     store a coordinate (i.e. selected is empty) and whether the [coord]
     contains a piece in the board of [state]*)
 let valid_fst_click (coord : int * int) (state : t) : bool =
-  unselected state
-  && pc_exists state.board (fst coord) (snd coord)
-  && (get_pc_of_xy state coord).player = state.player_turn
+  unselected state && valid_reclick coord state
 
 (** [store_fst_click coord state] returns a state with selected
     containing [coord], moves containing legal moves from [coord], caps
@@ -152,6 +156,8 @@ let move_cap_state (state : t) (coord : int * int) : t =
   let bd = move_cap_pc state.selected coord pc state in
   new_bd state bd
 
+(** [attempt_promote]*)
+
 (** [move] represents the type of state returned. Continue represents
     that the current player stays the same and requires new input. Legal
     represents that the board and player has changed. Illegal is similar
@@ -166,9 +172,13 @@ type move =
 let update (state : t) (coord : int * int) : move =
   if valid_fst_click coord state then
     Continue (store_fst_click coord state)
-  else if not (unselected state) then
-    if match_move coord state then Legal (move_state state coord)
-    else if match_capture coord state then
-      Legal (move_cap_state state coord)
+  else
+    let leg_move = match_move coord state in
+    let leg_cap = match_capture coord state in
+    if (not (unselected state)) && (leg_move || leg_cap) then
+      if leg_move then Legal (move_state state coord)
+      else if leg_cap then Legal (move_cap_state state coord)
+      else Illegal state
+    else if valid_reclick coord state then
+      Continue (store_fst_click coord state)
     else Illegal state
-  else Illegal state
