@@ -1,0 +1,23 @@
+{
+  "type": "object",
+  "properties": {
+    "type": "array",
+    "tiles": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "player": {
+            "type": "integer"
+          },
+          "id": {
+            "type": "integer"
+          }
+        }
+      }
+    },
+    "columns": {
+      "type": "integer"
+    }
+  }
+}

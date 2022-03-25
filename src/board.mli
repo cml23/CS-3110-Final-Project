@@ -13,10 +13,6 @@ val init_board : t
     at the start of the game. Player 1's pieces are contained in rows
     where y=1,2,3 and player 2's pieces are in rows where y=6,7,8. *)
 
-(*val from_json : Yojson.Basic.t -> t*)
-(** [from_json j] is the board that [j] represents. Requires: [j] is a
-    valid JSON board representation. *)
-
 val get_x : t -> int -> int
 (** [get_x b i] is the x coordinate on board [b] corresponding to the
     general index [i], which is 1 at the bottom left and maximum at the
@@ -99,3 +95,16 @@ val poss_captures : t -> piece -> (int * int) list * piece list
 val add_pc : t -> piece -> int -> int -> t
 (** [add_pc b pc x y] is board [b] with piece [pc] added to position x,y
     if that piece is empty; otherwise raises NotEmpty. *)
+
+val promote_pc : t -> piece -> t
+(** [promote b pc] is [b] with the [pc.is_royal] set to true for piece
+    [pc] on board [b]. *)
+
+val is_promotable : t -> piece -> bool
+(** [is_promotable b pc] is whether piece [pc] on board [b] is
+    promotable. This is true if [pc.is_royal=false] and [pc] is at the
+    opposite end of the board from which it started. *)
+
+val from_json : Yojson.Basic.t -> t
+(**[from_json json] is the board represented by [json]. Requires: [json]
+   is a valid JSON representation of a board.*)

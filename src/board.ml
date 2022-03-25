@@ -226,6 +226,54 @@ let add_pc (b : t) (pc : piece) (x : int) (y : int) : t =
       new_bd
   | Some _ -> raise NotEmpty
 
+let promote_pc (b : t) (pc : piece) =
+  let new_bd = copy_bd b in
+  let x, y =
+    match xy_of_pc b pc with
+    | None -> failwith "Nonexistent piece."
+    | Some (x_pc, y_pc) -> (x_pc, y_pc)
+  in
+  Array.set (fst new_bd)
+    (get_idx new_bd x y - 1)
+    (Some { pc with is_royal = true });
+  new_bd
+
+let is_promotable (b : t) (pc : piece) =
+  (not pc.is_royal)
+  &&
+  match xy_of_pc b pc with
+  | None -> failwith "Nonexistent piece."
+  | Some (_, y) ->
+      let row_max = Array.length (fst b) / snd b in
+      (pc.player = 1 && y = row_max) || (pc.player = 2 && y = 1)
+
 (* TODO: Encapsulate 4 neighbor functions, get_x, get_y, get_idx. *)
 
 (* TODO: add tests for poss_move, poss_captures, add_pc. *)
+
+(* FUNCTIONS ADDED BY CASSIDY BELOW. *)
+
+(**[tile_of_json json] is the tile represented by [json]. Requires:
+   [json] is a valid tile representation.*)
+let tile_of_json json : tile =
+  let open Yojson.Basic.Util in
+  let pl = json |> member "player" |> to_int_option in
+  match pl with
+  | None -> None
+  | Some x ->
+      Some
+        {
+          player = x;
+          id = json |> member "id" |> to_int;
+          is_royal = false;
+        }
+
+let from_json json =
+  let open Yojson.Basic.Util in
+  let tiles =
+    json |> member "tiles" |> to_list |> List.map tile_of_json
+    |> Array.of_list
+  in
+  let dimension = json |> member "columns" |> to_int in
+  (tiles, dimension)
+(* END FUNCTIONS ADDED BY CASSIDY. *)
