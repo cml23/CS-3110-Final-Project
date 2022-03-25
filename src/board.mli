@@ -13,10 +13,6 @@ val init_board : t
     at the start of the game. Player 1's pieces are contained in rows
     where y=1,2,3 and player 2's pieces are in rows where y=6,7,8. *)
 
-(*val from_json : Yojson.Basic.t -> t*)
-(** [from_json j] is the board that [j] represents. Requires: [j] is a
-    valid JSON board representation. *)
-
 val get_x : t -> int -> int
 (** [get_x b i] is the x coordinate on board [b] corresponding to the
     general index [i], which is 1 at the bottom left and maximum at the

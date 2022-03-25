@@ -253,6 +253,8 @@ let is_promotable (b : t) (pc : piece) =
 
 (* FUNCTIONS ADDED BY CASSIDY BELOW. *)
 
+(**[tile_of_json json] is the tile represented by [json]. Requires:
+   [json] is a valid tile representation.*)
 let tile_of_json json : tile =
   let open Yojson.Basic.Util in
   let pl = json |> member "player" |> to_int_option in
