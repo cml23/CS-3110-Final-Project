@@ -252,5 +252,26 @@ let is_promotable (b : t) (pc : piece) =
 (* TODO: add tests for poss_move, poss_captures, add_pc. *)
 
 (* FUNCTIONS ADDED BY CASSIDY BELOW. *)
-let from_json json = failwith "Unimplemented: from_json"
+
+let tile_of_json json : tile =
+  let open Yojson.Basic.Util in
+  let pl = json |> member "player" |> to_int_option in
+  match pl with
+  | None -> None
+  | Some x ->
+      Some
+        {
+          player = x;
+          id = json |> member "id" |> to_int;
+          is_royal = false;
+        }
+
+let from_json json =
+  let open Yojson.Basic.Util in
+  let tiles =
+    json |> member "tiles" |> to_list |> List.map tile_of_json
+    |> Array.of_list
+  in
+  let dimension = json |> member "columns" |> to_int in
+  (tiles, dimension)
 (* END FUNCTIONS ADDED BY CASSIDY. *)
