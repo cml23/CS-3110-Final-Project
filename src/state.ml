@@ -180,18 +180,23 @@ let check_mc (coord : int * int) (state : t) : t =
 
 (** [pro_pc state coord] attempts to promote a piece that has moved to
     [coord] and returns a new state accordingly. Should occur after
-    checking for multi capture to prevent post promotion captures.*)
+    [check_mc] to prevent post promotion captures.*)
 let pro_pc (coord : int * int) (state : t) : t =
   let pc = get_pc_of_xy coord state.board in
   if is_promotable state.board pc then
     promote_pc state.board pc |> new_bd state
   else state
 
+(** [legal_action coord state] returns whether second click [coord] is
+    located within the possible moves or captures of [state].*)
 let legal_action (coord : int * int) (state : t) : bool =
   match_coord coord state.moves || match_coord coord (fst state.caps)
 
-(** Precondition: Either a move or capture is possible. [coord] is valid
-    move or capture location of selected piece. *)
+(** [pipeline move mc coord state] changes [state] depending on the
+    legal second click [coord], whether it is a [move], and whether it
+    is undergoing multicapture. Precondition: Either a move or capture
+    is possible. [coord] is valid move or capture location of selected
+    piece. *)
 let pipeline (move : bool) (mc : bool) (coord : int * int) (state : t) :
     t =
   if move then move_state coord state |> reset_st |> pro_pc coord
@@ -210,10 +215,16 @@ type move =
   | Legal of t
   | Illegal of t
 
+(** [match_mc_pc f coord state] returns whether [coord] and [state]
+    statisfy function [f] and that [coord] contains the piece undergoing
+    multicapture. Precondition: [f] checks whether [coord] has a piece
+    for short circuit evaluation.*)
 let match_mc_pc f (coord : int * int) (state : t) : bool =
   f coord state
   && Some (get_pc_of_xy coord state.board) = state.mc.piece
 
+(** [legal_mc coord state] handles move legality when there is a forced
+    multicapture for one player depending on [coord] and [state].*)
 let legal_mc (coord : int * int) (state : t) : move =
   if match_mc_pc valid_fst_click coord state then
     Continue (store_fst_click coord state)
@@ -225,7 +236,7 @@ let legal_mc (coord : int * int) (state : t) : move =
   else Illegal state
 
 (** [update coord state] returns a move depending on the validity of
-    [coord] and the curren [state] *)
+    [coord] and the current [state]. *)
 let update (state : t) (coord : int * int) : move =
   if state.mc.present then legal_mc coord state
   else if valid_fst_click coord state then
