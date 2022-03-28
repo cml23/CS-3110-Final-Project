@@ -17,7 +17,7 @@ let draw_piece
   if pc.player = 1 then
     if pc.is_royal then set_color (magenta : Graphics.color)
     else set_color (yellow : Graphics.color)
-  else if pc.is_royal then set_color (green : Graphics.color)
+  else if pc.is_royal then set_color (blue : Graphics.color)
   else set_color (cyan : Graphics.color);
   fill_ellipse
     (x + (tile_size / 2))
