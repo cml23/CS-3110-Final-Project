@@ -37,10 +37,13 @@ let init_state (board : Board.t) : t =
 let get_board (state : t) : Board.t = state.board
 let game_over (state : t) : bool = state.game_over
 let get_victor (state : t) : string = state.victor
+let get_player (state : t) : int = state.player_turn
 let get_moves (state : t) : (int * int) list = state.moves
-let get_caps (state : t) : (int * int) list * piece list = state.caps
+let get_caps (state : t) : (int * int) list = fst state.caps
 let unselected (state : t) : bool = state.selected = (-1, -1)
 let selected (state : t) : int * int = state.selected
+let get_if_mc (state : t) : bool = state.mc.present
+let get_mc_caps (state : t) : (int * int) list = fst state.mc.caps
 
 let check_victor (state : t) : t =
   if Board.num_pcs_of_pl state.board 1 = 0 then

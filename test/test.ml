@@ -234,24 +234,123 @@ let victor_test
     (exp_out : string) : test =
   name >:: fun _ -> assert_equal exp_out (get_victor state)
 
+let player_test (name : string) (state : Game.State.t) (exp_out : int) :
+    test =
+  name >:: fun _ -> assert_equal exp_out (get_player state)
+
 let unselected_test
     (name : string)
     (state : Game.State.t)
     (exp_out : bool) : test =
   name >:: fun _ -> assert_equal exp_out (unselected state)
 
-(* let update_test (name : string) (state : Game.State.t) (exp_out :
-   (int * int) list) : test = name >:: fun _ -> assert_equal exp_out
-   (selected state) *)
+let selected_test
+    (name : string)
+    (state : Game.State.t)
+    (exp_out : int * int) : test =
+  name >:: fun _ -> assert_equal exp_out (selected state)
 
-let def_st = init_state def_bd
+let suc = List.sort_uniq compare
+
+let getter_test
+    (name : string)
+    (state : Game.State.t)
+    (getter : Game.State.t -> (int * int) list)
+    (exp_out : (int * int) list) : test =
+  name >:: fun _ -> assert_equal (suc exp_out) (getter state |> suc)
+
+let if_mc_test (name : string) (state : Game.State.t) (exp_out : bool) :
+    test =
+  name >:: fun _ -> assert_equal exp_out (get_if_mc state)
+
+let new_state (coord : int * int) (state : Game.State.t) : Game.State.t
+    =
+  match update state coord with
+  | Continue s -> s
+  | Legal s -> s
+  | Illegal s -> s
+
+let assert_continue (move : Game.State.move) : bool =
+  match move with
+  | Continue s -> true
+  | _ -> false
+
+let assert_legal (move : Game.State.move) : bool =
+  match move with
+  | Legal s -> true
+  | _ -> false
+
+let assert_illegal (move : Game.State.move) : bool =
+  match move with
+  | Illegal s -> true
+  | _ -> false
+
+let update_test
+    (name : string)
+    (state : Game.State.t)
+    (coord : int * int)
+    (assert_move : move -> bool) : test =
+  name >:: fun _ ->
+  assert_equal true
+    (update state coord |> assert_move)
+    ~printer:string_of_bool
+
+let initial_state = init_state def_bd
+let selected_state = new_state (3, 3) initial_state
+let move_state = new_state (4, 4) selected_state
+
+let cap_state =
+  move_state |> new_state (6, 6) |> new_state (5, 5) |> new_state (4, 4)
 
 let state_tests =
   [
-    game_over_test "initial state game_over" def_st false;
-    victor_test "initial state game_over" def_st "";
-    unselected_test "initial state game_over" def_st true
-    (* update_test "initial state game_over" def_st false; *);
+    (* Initial State.*)
+    game_over_test "Init State: game_over" initial_state false;
+    victor_test "Init State: victor" initial_state "";
+    player_test "Init State: player nunber" initial_state 1;
+    unselected_test "Init State: unselected" initial_state true;
+    selected_test "Init State: selected" initial_state (-1, -1);
+    getter_test "Init State: moves" initial_state get_moves [];
+    getter_test "Init State: captures" initial_state get_caps [];
+    getter_test "Init State: multicaptures" initial_state get_mc_caps [];
+    update_test "Init State: select (3, 3) is continue" initial_state
+      (3, 3) assert_continue;
+    (* Selected Board.*)
+    game_over_test "Sel State: game_over" selected_state false;
+    victor_test "Sel State: victor" selected_state "";
+    player_test "Sel State: player nunber" selected_state 1;
+    unselected_test "Sel State: unselected" selected_state false;
+    selected_test "Sel State: selected" selected_state (3, 3);
+    getter_test "Sel State: moves" selected_state get_moves
+      [ (2, 4); (4, 4) ];
+    getter_test "Sel State: captures" selected_state get_caps [];
+    getter_test "Sel State: multicaptures" selected_state get_mc_caps [];
+    update_test "Sel State: move to (4, 4) is legal" selected_state
+      (4, 4) assert_legal
+    (* Moved Piece (3, 3) to (4, 4)*);
+    game_over_test "P2 State: game_over" move_state false;
+    victor_test "P2 State: victor" move_state "";
+    player_test "P2 State: player nunber" move_state 2;
+    unselected_test "P2 State: unselected" move_state true;
+    selected_test "P2 State: selected" move_state (-1, -1);
+    getter_test "P2 State: moves" move_state get_moves [];
+    getter_test "P2 State: captures" move_state get_caps [];
+    getter_test "P2 State: multicaptures" move_state get_mc_caps [];
+    update_test "P2 State: select (6, 6) is continue" move_state (6, 6)
+      assert_continue;
+    (* P1 can capture.*)
+    game_over_test "P1 Capture State: game_over" cap_state false;
+    victor_test "P1 Capture State: victor" cap_state "";
+    player_test "P1 Capture State: player nunber" cap_state 1;
+    unselected_test "P1 Capture State: unselected" cap_state false;
+    selected_test "P1 Capture State: selected" cap_state (4, 4);
+    getter_test "P1 Capture State: moves" cap_state get_moves [ (3, 5) ];
+    getter_test "P1 Capture State: captures" cap_state get_caps
+      [ (6, 6) ];
+    getter_test "P1 Capture State: multicaptures" cap_state get_mc_caps
+      [];
+    update_test "P1 Capture State: select (6, 6) is legal" cap_state
+      (6, 6) assert_legal;
   ]
 
 (* Add helper functions for testing Canvas here.*)
