@@ -1,0 +1,32 @@
+This game assumes you have the latest OCaml and Dune installed on your computer.
+
+You will need to install the following packages: 
+yojson, ANSITerminal, onunit2, Graphics. 
+
+If you are running Windows, you will need to run the following commands
+in the command line:
+
+sudo apt-get install pkg-config
+opam install graphics
+opam install user-setup
+opam user-setup install
+Follow these instructions to download an X-server:
+https://www.youtube.com/watch?v=4SZXbl9KVsw
+eval $(opam env)
+export DISPLAY=$(awk '/nameserver / {print $2; exit}' /etc/resolv.conf 2>/dev/null):0
+export LIBGL_ALWAYS_INDIRECT=1
+
+If you are running MacOS, you will need to run the following commands
+in the terminal:
+
+opam install graphics
+
+Next, for MacOS and Windows you will need to also run the following commands:
+opam install yojson
+opam install ANSITerminal
+opam install onunit2
+
+Next, restart your computer and navigate to the directory with the game file 
+in the command line/terminal.
+
+Finally, type 'make play' (without quotations) and press enter.
