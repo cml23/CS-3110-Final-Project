@@ -1,8 +1,18 @@
+open Board
 (** Representation of dynamic game state.
 
     This module represents the current state of the board, modifies it
     based on moves and their legality, and checks whether a player has
     lost or not. *)
+
+type move = {
+  start : int * int;
+  finish : int * int;
+  cap_sq : int * int;
+  cap_pc : piece option;
+}
+(** Public type that stores information about a single move that allows
+    for undoing moves. *)
 
 type t
 (** The abstract value representing the game state, including a board,
@@ -46,22 +56,22 @@ val get_if_mc : t -> bool
 (** [get_if_mc t] returns whether the state is in multicapture mode or
     not. *)
 
-val get_mc_caps : t -> (int * int) list
-(** [get_mc_caps] returns the possible captures in multicapture mode. *)
+val get_past_moves : t -> move list
+(** [get_past_moves] returns the possible captures in multicapture mode. *)
 
-(** [move] represents the type of state returned. Continue represents
+(** [turn] represents the type of state returned. Continue represents
     that the current player stays the same and requires new input. Legal
     represents that the board and player has changed. Illegal is similar
     to Continue but the player has inputted an invalid set of moves.*)
-type move =
+type turn =
   | Continue of t
   | Legal of t
   | Illegal of t
 
-val update : t -> int * int -> move
+val update : t -> int * int -> turn
 (** [update coord state] converts a coordinate into a selection or piece
-    movement on the board. T is Continue if the first [coord] provided
-    is contains a piece and Legal if the second [coord] provided is an
-    empty square satisfying certain conditions. [move] is Illegal if the
-    first [coord] provided does not contain a piece or the second
-    [coord] provided is an illegal checkers move. *)
+    movement on the board. [turn] is Continue if the first [coord]
+    provided is contains a piece and Legal if the second [coord]
+    provided is an empty square satisfying certain conditions. [turn] is
+    Illegal if the first [coord] provided does not contain a piece or
+    the second [coord] provided is an illegal checkers move. *)

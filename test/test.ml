@@ -270,17 +270,17 @@ let new_state (coord : int * int) (state : Game.State.t) : Game.State.t
   | Legal s -> s
   | Illegal s -> s
 
-let assert_continue (move : Game.State.move) : bool =
+let assert_continue (move : Game.State.turn) : bool =
   match move with
   | Continue s -> true
   | _ -> false
 
-let assert_legal (move : Game.State.move) : bool =
+let assert_legal (move : Game.State.turn) : bool =
   match move with
   | Legal s -> true
   | _ -> false
 
-let assert_illegal (move : Game.State.move) : bool =
+let assert_illegal (move : Game.State.turn) : bool =
   match move with
   | Illegal s -> true
   | _ -> false
@@ -289,7 +289,7 @@ let update_test
     (name : string)
     (state : Game.State.t)
     (coord : int * int)
-    (assert_move : move -> bool) : test =
+    (assert_move : turn -> bool) : test =
   name >:: fun _ ->
   assert_equal true
     (update state coord |> assert_move)
@@ -312,7 +312,6 @@ let state_tests =
     selected_test "Init State: selected" initial_state (-1, -1);
     getter_test "Init State: moves" initial_state get_moves [];
     getter_test "Init State: captures" initial_state get_caps [];
-    getter_test "Init State: multicaptures" initial_state get_mc_caps [];
     update_test "Init State: select (3, 3) is continue" initial_state
       (3, 3) assert_continue;
     (* Selected Board.*)
@@ -324,7 +323,6 @@ let state_tests =
     getter_test "Sel State: moves" selected_state get_moves
       [ (2, 4); (4, 4) ];
     getter_test "Sel State: captures" selected_state get_caps [];
-    getter_test "Sel State: multicaptures" selected_state get_mc_caps [];
     update_test "Sel State: move to (4, 4) is legal" selected_state
       (4, 4) assert_legal
     (* Moved Piece (3, 3) to (4, 4)*);
@@ -335,7 +333,6 @@ let state_tests =
     selected_test "P2 State: selected" move_state (-1, -1);
     getter_test "P2 State: moves" move_state get_moves [];
     getter_test "P2 State: captures" move_state get_caps [];
-    getter_test "P2 State: multicaptures" move_state get_mc_caps [];
     update_test "P2 State: select (6, 6) is continue" move_state (6, 6)
       assert_continue;
     (* P1 can capture.*)
@@ -347,8 +344,6 @@ let state_tests =
     getter_test "P1 Capture State: moves" cap_state get_moves [ (3, 5) ];
     getter_test "P1 Capture State: captures" cap_state get_caps
       [ (6, 6) ];
-    getter_test "P1 Capture State: multicaptures" cap_state get_mc_caps
-      [];
     update_test "P1 Capture State: select (6, 6) is legal" cap_state
       (6, 6) assert_legal;
   ]

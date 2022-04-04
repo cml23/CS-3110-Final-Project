@@ -2,23 +2,35 @@ open Board
 
 exception RemoveNoPiece
 exception NoPiece
+
 exception NoMove
+(** Exceptions for defensive programming to statisfy functino
+    postconditions. *)
 
 type multi_capture = {
   present : bool;
   piece : piece option;
-  caps : (int * int) list * piece list;
+}
+(** Stores information about multicapture when in multicapture mode. *)
+
+type move = {
+  start : int * int;
+  finish : int * int;
+  cap_sq : int * int;
+  cap_pc : piece option;
 }
 
 type t = {
   board : Board.t;
   game_over : bool;
   victor : string;
-  selected : int * int;
+  sel : int * int;
+  sel_pc : piece option;
   moves : (int * int) list;
   caps : (int * int) list * piece list;
   player_turn : int;
   mc : multi_capture;
+  past_moves : move list;
 }
 (* Should be [""] for no victor, ["player 1"], and ["player 2"] *)
 
@@ -27,12 +39,16 @@ let init_state (board : Board.t) : t =
     board;
     game_over = false;
     victor = "";
-    selected = (-1, -1);
+    sel = (-1, -1);
+    sel_pc = None;
     moves = [];
     caps = ([], []);
     player_turn = 1;
-    mc = { present = false; piece = None; caps = ([], []) };
+    mc = { present = false; piece = None };
+    past_moves = [];
   }
+
+(*=========GETTER FUNCTIONS=========*)
 
 let get_board (state : t) : Board.t = state.board
 let game_over (state : t) : bool = state.game_over
@@ -40,17 +56,12 @@ let get_victor (state : t) : string = state.victor
 let get_player (state : t) : int = state.player_turn
 let get_moves (state : t) : (int * int) list = state.moves
 let get_caps (state : t) : (int * int) list = fst state.caps
-let unselected (state : t) : bool = state.selected = (-1, -1)
-let selected (state : t) : int * int = state.selected
+let unselected (state : t) : bool = state.sel = (-1, -1)
+let selected (state : t) : int * int = state.sel
 let get_if_mc (state : t) : bool = state.mc.present
-let get_mc_caps (state : t) : (int * int) list = fst state.mc.caps
+let get_past_moves (state : t) : move list = state.past_moves
 
-let check_victor (state : t) : t =
-  if Board.num_pcs_of_pl state.board 1 = 0 then
-    { state with game_over = false; victor = "player 2" }
-  else if Board.num_pcs_of_pl state.board 2 = 0 then
-    { state with game_over = false; victor = "player 1" }
-  else state
+(*=========INDEX FUNCTIONS=========*)
 
 (** [get_xy_of_pc state pc] is a wrapper function for xy_of_pc in board.
     Returns the coordinates of [pc]. Postcondition: raises [NoPiece] if
@@ -92,6 +103,21 @@ let match_coord (finish : int * int) (coords : (int * int) list) : bool
     =
   List.exists (fun x -> x = finish) coords
 
+(** [valid_reclick coord state] checks whether or not the [coord]
+    contains a piece in the board of [state] that matches the player
+    turn.*)
+let valid_reclick (coord : int * int) (state : t) : bool =
+  pc_exists state.board (fst coord) (snd coord)
+  && (get_pc_of_xy coord state.board).player = state.player_turn
+
+(** [valid_fst_click coord state] checks whether or not [state] can
+    store a coordinate (i.e. selected is empty) and whether the [coord]
+    contains a piece in the board of [state].*)
+let valid_fst_click (coord : int * int) (state : t) : bool =
+  unselected state && valid_reclick coord state
+
+(*=========BOARD MANIPULATION FUNCTIONS=========*)
+
 (** [move_pc start finish state] returns a board with a piece moved from
     [start] to [finish]. Precondition: [start] and [finish] are valid
     board coordinates and [start] contains a piece.*)
@@ -107,18 +133,7 @@ let cap_pc (rem_pc : piece) (board : Board.t) : Board.t =
   let cd = get_xy_of_pc rem_pc board in
   del_pc board (fst cd) (snd cd)
 
-(** [valid_reclick coord state] checks whether or not the [coord]
-    contains a piece in the board of [state] that matches the player
-    turn.*)
-let valid_reclick (coord : int * int) (state : t) : bool =
-  pc_exists state.board (fst coord) (snd coord)
-  && (get_pc_of_xy coord state.board).player = state.player_turn
-
-(** [valid_fst_click coord state] checks whether or not [state] can
-    store a coordinate (i.e. selected is empty) and whether the [coord]
-    contains a piece in the board of [state].*)
-let valid_fst_click (coord : int * int) (state : t) : bool =
-  unselected state && valid_reclick coord state
+(*=========STATE MANIPULATION FUNCTIONS=========*)
 
 (** [store_fst_click coord state] returns a state with selected
     containing [coord], moves containing legal moves from [coord], caps
@@ -128,10 +143,13 @@ let store_fst_click (coord : int * int) (state : t) : t =
   let pc = get_pc_of_xy coord state.board in
   {
     state with
-    selected = coord;
+    sel = coord;
+    sel_pc = Some pc;
     moves = poss_moves state.board pc;
     caps = poss_captures state.board pc;
   }
+
+let store_move = ()
 
 (** [new_bd bd state] returns a state with board [bd] and the selected,
     moves, and caps fields cleared. Precondition: [bd] is the board
@@ -143,7 +161,8 @@ let new_bd (state : t) (bd : Board.t) : t = { state with board = bd }
 let reset_st (state : t) : t =
   {
     state with
-    selected = (-1, -1);
+    sel = (-1, -1);
+    sel_pc = None;
     moves = [];
     caps = ([], []);
     player_turn = (if state.player_turn = 1 then 2 else 1);
@@ -152,7 +171,7 @@ let reset_st (state : t) : t =
 (** [move_state state coord] returns a state with the selected piece
     moved to [coord] on the board. *)
 let move_state (coord : int * int) (state : t) : t =
-  move_pc state.selected coord state.board |> new_bd state
+  move_pc state.sel coord state.board |> new_bd state
 
 (** [move_cap_state state coord] returns a state with the selected piece
     moved to [coord] on the board and the intermittent piece captured. *)
@@ -161,7 +180,7 @@ let move_cap_state
     (caps : (int * int) list * piece list)
     (state : t) : t =
   let pc = get_cap_pc coord caps in
-  move_pc state.selected coord state.board |> cap_pc pc |> new_bd state
+  move_pc state.sel coord state.board |> cap_pc pc |> new_bd state
 
 (** [check_mc state coord] checks whether the piece that has moved to
     [coord] can capture again without promotion and stores the
@@ -173,13 +192,10 @@ let check_mc (coord : int * int) (state : t) : t =
     {
       state with
       player_turn = pc.player;
-      mc = { present = true; piece = Some pc; caps };
+      caps;
+      mc = { present = true; piece = Some pc };
     }
-  else
-    {
-      state with
-      mc = { present = false; piece = None; caps = ([], []) };
-    }
+  else { state with mc = { present = false; piece = None } }
 
 (** [pro_pc state coord] attempts to promote a piece that has moved to
     [coord] and returns a new state accordingly. Should occur after
@@ -190,10 +206,12 @@ let pro_pc (coord : int * int) (state : t) : t =
     promote_pc state.board pc |> new_bd state
   else state
 
-(** [legal_action coord state] returns whether second click [coord] is
-    located within the possible moves or captures of [state].*)
-let legal_action (coord : int * int) (state : t) : bool =
-  match_coord coord state.moves || match_coord coord (fst state.caps)
+let check_victor (state : t) : t =
+  if Board.num_pcs_of_pl state.board 1 = 0 then
+    { state with game_over = false; victor = "player 2" }
+  else if Board.num_pcs_of_pl state.board 2 = 0 then
+    { state with game_over = false; victor = "player 1" }
+  else state
 
 (** [pipeline move mc coord state] changes [state] depending on the
     legal second click [coord], whether it is a [move], and whether it
@@ -204,19 +222,24 @@ let pipeline (move : bool) (mc : bool) (coord : int * int) (state : t) :
     t =
   if move then move_state coord state |> reset_st |> pro_pc coord
   else
-    move_cap_state coord
-      (if mc then state.mc.caps else state.caps)
-      state
-    |> reset_st |> check_mc coord |> pro_pc coord
+    move_cap_state coord state.caps state
+    |> reset_st |> check_mc coord |> pro_pc coord |> check_victor
 
-(** [move] represents the type of state returned. Continue represents
+(*=========UPDATE AND IMMEDIATE HFs=========*)
+
+(** [turn] represents the type of state returned. Continue represents
     that the current player stays the same and requires new input. Legal
     represents that the board and player has changed. Illegal is similar
     to Continue but the player has inputted an invalid set of moves.*)
-type move =
+type turn =
   | Continue of t
   | Legal of t
   | Illegal of t
+
+(** [legal_action coord state] returns whether second click [coord] is
+    located within the possible moves or captures of [state].*)
+let legal_action (coord : int * int) (state : t) : bool =
+  match_coord coord state.moves || match_coord coord (fst state.caps)
 
 (** [match_mc_pc f coord state] returns whether [coord] and [state]
     statisfy function [f] and that [coord] contains the piece undergoing
@@ -228,19 +251,18 @@ let match_mc_pc f (coord : int * int) (state : t) : bool =
 
 (** [legal_mc coord state] handles move legality when there is a forced
     multicapture for one player depending on [coord] and [state].*)
-let legal_mc (coord : int * int) (state : t) : move =
+let legal_mc (coord : int * int) (state : t) : turn =
   if match_mc_pc valid_fst_click coord state then
     Continue (store_fst_click coord state)
-  else if
-    (not (unselected state)) && match_coord coord (fst state.mc.caps)
+  else if (not (unselected state)) && match_coord coord (fst state.caps)
   then Legal (pipeline false true coord state)
   else if match_mc_pc valid_reclick coord state then
     Continue (store_fst_click coord state)
   else Illegal state
 
-(** [update coord state] returns a move depending on the validity of
+(** [update coord state] returns a turn depending on the validity of
     [coord] and the current [state]. *)
-let update (state : t) (coord : int * int) : move =
+let update (state : t) (coord : int * int) : turn =
   if state.mc.present then legal_mc coord state
   else if valid_fst_click coord state then
     Continue (store_fst_click coord state)
