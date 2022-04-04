@@ -255,25 +255,26 @@ let is_promotable (b : t) (pc : piece) =
 
 (**[tile_of_json json] is the tile represented by [json]. Requires:
    [json] is a valid tile representation.*)
-let tile_of_json json : tile =
+let tile_of_json (a : tile array) json : unit =
   let open Yojson.Basic.Util in
-  let pl = json |> member "player" |> to_int_option in
-  match pl with
-  | None -> None
-  | Some x ->
-      Some
-        {
-          player = x;
-          id = json |> member "id" |> to_int;
-          is_royal = false;
-        }
+  let pos = json |> member "tile" |> to_int in
+  let tile =
+    Some
+      {
+        player = json |> member "player" |> to_int;
+        id = json |> member "id" |> to_int;
+        is_royal = false;
+      }
+  in
+  a.(pos - 1) <- tile
 
 let from_json json =
   let open Yojson.Basic.Util in
-  let tiles =
-    json |> member "tiles" |> to_list |> List.map tile_of_json
-    |> Array.of_list
+  let rows = json |> member "rows" |> to_int in
+  let cols = json |> member "columns" |> to_int in
+  let a = Array.make (rows * cols) None in
+  let _ =
+    json |> member "tiles" |> to_list |> List.iter (tile_of_json a)
   in
-  let dimension = json |> member "columns" |> to_int in
-  (tiles, dimension)
+  (a, cols)
 (* END FUNCTIONS ADDED BY CASSIDY. *)

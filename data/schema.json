@@ -12,11 +12,17 @@
           },
           "id": {
             "type": "integer"
+          },
+          "tile": {
+            "type": "integer"
           }
         }
       }
     },
     "columns": {
+      "type": "integer"
+    },
+    "rows": {
       "type": "integer"
     }
   }

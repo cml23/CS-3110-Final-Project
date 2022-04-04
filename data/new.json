@@ -1,261 +1,31 @@
 {
   "tiles": [
     {
-      "player": 1,
-      "id": 1
-    },
-    {
-      "player": null,
-      "id": null
-    },
-    {
-      "player": null,
-      "id": null
-    },
-    {
-      "player": null,
-      "id": null
-    },
-    {
-      "player": null,
-      "id": null
-    },
-    {
-      "player": null,
-      "id": null
-    },
-    {
-      "player": null,
-      "id": null
-    },
-    {
-      "player": null,
-      "id": null
-    },
-    {
-      "player": null,
-      "id": null
-    },
-    {
-      "player": null,
-      "id": null
-    },
-    {
-      "player": null,
-      "id": null
-    },
-    {
-      "player": null,
-      "id": null
-    },
-    {
-      "player": null,
-      "id": null
-    },
-    {
-      "player": null,
-      "id": null
-    },
-    {
-      "player": null,
-      "id": null
-    },
-    {
-      "player": null,
-      "id": null
-    },
-    {
-      "player": null,
-      "id": null
-    },
-    {
-      "player": null,
-      "id": null
-    },
-    {
-      "player": null,
-      "id": null
-    },
-    {
-      "player": null,
-      "id": null
-    },
-    {
-      "player": null,
-      "id": null
-    },
-    {
-      "player": null,
-      "id": null
-    },
-    {
-      "player": null,
-      "id": null
-    },
-    {
-      "player": null,
-      "id": null
-    },
-    {
-      "player": null,
-      "id": null
-    },
-    {
-      "player": null,
-      "id": null
-    },
-    {
-      "player": null,
-      "id": null
-    },
-    {
-      "player": null,
-      "id": null
-    },
-    {
-      "player": null,
-      "id": null
-    },
-    {
-      "player": null,
-      "id": null
-    },
-    {
-      "player": null,
-      "id": null
-    },
-    {
-      "player": null,
-      "id": null
-    },
-    {
-      "player": null,
-      "id": null
-    },
-    {
-      "player": null,
-      "id": null
-    },
-    {
-      "player": null,
-      "id": null
-    },
-    {
-      "player": null,
-      "id": null
-    },
-    {
-      "player": null,
-      "id": null
-    },
-    {
-      "player": null,
-      "id": null
-    },
-    {
-      "player": null,
-      "id": null
-    },
-    {
-      "player": null,
-      "id": null
-    },
-    {
-      "player": null,
-      "id": null
-    },
-    {
-      "player": null,
-      "id": null
-    },
-    {
-      "player": null,
-      "id": null
-    },
-    {
-      "player": null,
-      "id": null
-    },
-    {
-      "player": null,
-      "id": null
-    },
-    {
-      "player": null,
-      "id": null
-    },
-    {
-      "player": null,
-      "id": null
-    },
-    {
-      "player": null,
-      "id": null
-    },
-    {
-      "player": null,
-      "id": null
-    },
-    {
-      "player": null,
-      "id": null
-    },
-    {
-      "player": null,
-      "id": null
-    },
-    {
-      "player": null,
-      "id": null
-    },
-    {
-      "player": null,
-      "id": null
-    },
-    {
-      "player": null,
-      "id": null
-    },
-    {
-      "player": null,
-      "id": null
-    },
-    {
-      "player": null,
-      "id": null
-    },
-    {
-      "player": null,
-      "id": null
-    },
-    {
-      "player": null,
-      "id": null
-    },
-    {
-      "player": null,
-      "id": null
-    },
-    {
-      "player": null,
-      "id": null
-    },
-    {
-      "player": null,
-      "id": null
-    },
-    {
-      "player": null,
-      "id": null
-    },
-    {
-      "player": null,
-      "id": null
+      "player": 2,
+      "id": 1,
+      "tile": 62
     },
     {
       "player": 2,
-      "id": 2
+      "id": 2,
+      "tile": 49
+    },
+    {
+      "player": 2,
+      "id": 3,
+      "tile": 50
+    },
+    {
+      "player": 1,
+      "id": 4,
+      "tile": 10
+    },
+    {
+      "player": 1,
+      "id": 5,
+      "tile": 12
     }
   ],
-  "columns": 8
+  "columns": 8,
+  "rows": 8
 }
