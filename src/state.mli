@@ -69,7 +69,7 @@ type turn =
   | Legal of t
   | Illegal of t
 
-val update : t -> int * int -> turn
+val update : int * int -> t -> turn
 (** [update coord state] converts a coordinate into a selection or piece
     movement on the board. [turn] is Continue if the first [coord]
     provided is contains a piece and Legal if the second [coord]

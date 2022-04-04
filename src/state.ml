@@ -322,6 +322,8 @@ let legal_act (coord : int * int) (state : t) : bool =
 let match_mc_pc f (coord : int * int) (state : t) : bool =
   f coord state && Some (get_pc_of_xy coord state.board) = state.mc_pc
 
+(* TODO: CHANGE TO ALLOW SINGLE CLICKING *)
+
 (** [legal_mc coord state] handles move legality when there is a forced
     multicapture for one player depending on [coord] and [state].*)
 let legal_mc (coord : int * int) (state : t) : turn =
@@ -335,7 +337,7 @@ let legal_mc (coord : int * int) (state : t) : turn =
 
 (** [update coord state] returns a turn depending on the validity of
     [coord] and the current [state]. *)
-let update (state : t) (coord : int * int) : turn =
+let update (coord : int * int) (state : t) : turn =
   if state.mc_pres then legal_mc coord state
   else if valid_fst_clk coord state then
     Continue (store_fst_clk coord state)
@@ -344,6 +346,7 @@ let update (state : t) (coord : int * int) : turn =
     Legal (reg_move legal_move coord state)
   else if valid_reclk coord state then
     Continue (store_fst_clk coord state)
+  else if unselected state then Continue state
   else Illegal state
 
 (*=========UNDO AND REDO AND HFs=========*)

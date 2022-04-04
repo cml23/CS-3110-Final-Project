@@ -204,12 +204,11 @@ let board_tests =
   ]
 
 (* Add helper functions for testing State here.*)
-let rec print_selected (selected : (int * int) list) =
-  match selected with
-  | [] -> ""
-  | (x, y) :: t ->
-      "(" ^ string_of_int x ^ ", " ^ string_of_int y ^ ")"
-      ^ print_selected t
+let string_of_tuple = function
+  | x, y -> "(" ^ string_of_int x ^ ", " ^ string_of_int y ^ ")"
+
+let rec string_of_tuple_list (selected : (int * int) list) =
+  "[" ^ String.concat " " (List.map string_of_tuple selected) ^ "]"
 
 let print_state (state : Game.State.t) =
   "{game_over="
@@ -220,15 +219,13 @@ let print_state (state : Game.State.t) =
   ^ (state |> unselected |> string_of_bool)
   ^ "}"
 
-let string_of_tuple = function
-  | x, y -> "(" ^ string_of_int x ^ ", " ^ string_of_int y ^ ")"
-
 let string_of_move (mv : Game.State.move) =
   String.concat ""
     [
       "{";
       "s: ";
       string_of_tuple mv.start;
+      ", ";
       "f: ";
       string_of_tuple mv.finish;
       "}";
@@ -246,25 +243,23 @@ let game_over_test
   name >:: fun _ ->
   assert_equal exp_out (game_over state) ~printer:string_of_bool
 
-let victor_test (name : string) (state : Game.State.t) (exp_out : int) :
+let int_test f (name : string) (state : Game.State.t) (exp_out : int) :
     test =
-  name >:: fun _ -> assert_equal exp_out (get_vc state)
-
-let player_test (name : string) (state : Game.State.t) (exp_out : int) :
-    test =
-  name >:: fun _ -> assert_equal exp_out (get_player state)
+  name >:: fun _ -> state |> f |> assert_equal exp_out
 
 let unselected_test
     (name : string)
     (state : Game.State.t)
     (exp_out : bool) : test =
-  name >:: fun _ -> assert_equal exp_out (unselected state)
+  name >:: fun _ ->
+  assert_equal exp_out (unselected state) ~printer:string_of_bool
 
 let selected_test
     (name : string)
     (state : Game.State.t)
     (exp_out : int * int) : test =
-  name >:: fun _ -> assert_equal exp_out (selected state)
+  name >:: fun _ ->
+  assert_equal exp_out (selected state) ~printer:string_of_tuple
 
 let suc = List.sort_uniq compare
 
@@ -273,7 +268,10 @@ let getter_test
     (state : Game.State.t)
     (getter : Game.State.t -> (int * int) list)
     (exp_out : (int * int) list) : test =
-  name >:: fun _ -> assert_equal (suc exp_out) (getter state |> suc)
+  name >:: fun _ ->
+  assert_equal (suc exp_out)
+    (getter state |> suc)
+    ~printer:string_of_tuple_list
 
 let if_mc_test (name : string) (state : Game.State.t) (exp_out : bool) :
     test =
@@ -281,7 +279,7 @@ let if_mc_test (name : string) (state : Game.State.t) (exp_out : bool) :
 
 let new_state (coord : int * int) (state : Game.State.t) : Game.State.t
     =
-  match update state coord with
+  match update coord state with
   | Continue s -> s
   | Legal s -> s
   | Illegal s -> s
@@ -308,7 +306,7 @@ let update_test
     (assert_move : turn -> bool) : test =
   name >:: fun _ ->
   assert_equal true
-    (update state coord |> assert_move)
+    (update coord state |> assert_move)
     ~printer:string_of_bool
 
 let urdo_len_test
@@ -329,6 +327,7 @@ let urdo_test
   name >:: fun _ ->
   assert_equal exp_out (state |> f |> List.hd) ~printer:string_of_move
 
+(*=========BASIC TESTS=========*)
 let is1 = init_state def_bd
 let selected_state = new_state (3, 3) is1
 let move_state = new_state (4, 4) selected_state
@@ -336,25 +335,12 @@ let move_state = new_state (4, 4) selected_state
 let m1 =
   { start = (3, 3); finish = (4, 4); cap_sq = (-1, -1); cap_pc = None }
 
-let is2 = init_state def_bd
-
-let cap_state =
-  is2
-  |> new_state (3, 3)
-  |> new_state (4, 4)
-  |> new_state (6, 6)
-  |> new_state (5, 5)
-  |> new_state (4, 4)
-
-let m2 =
-  { start = (6, 6); finish = (5, 5); cap_sq = (-1, -1); cap_pc = None }
-
-let state_tests =
+let basic_tests =
   [
     (* Initial State.*)
     game_over_test "Init State: game_over" is1 false;
-    victor_test "Init State: victor" is1 0;
-    player_test "Init State: player nunber" is1 1;
+    int_test get_vc "Init State: victor" is1 0;
+    int_test get_player "Init State: player nunber" is1 1;
     unselected_test "Init State: unselected" is1 true;
     selected_test "Init State: selected" is1 (-1, -1);
     getter_test "Init State: moves" is1 get_moves [];
@@ -363,13 +349,17 @@ let state_tests =
       assert_continue;
     (* Selected Board.*)
     game_over_test "Sel State: game_over" selected_state false;
-    victor_test "Sel State: victor" selected_state 0;
-    player_test "Sel State: player nunber" selected_state 1;
+    int_test get_vc "Sel State: victor" selected_state 0;
+    int_test get_player "Sel State: player nunber" selected_state 1;
     unselected_test "Sel State: unselected" selected_state false;
     selected_test "Sel State: selected" selected_state (3, 3);
     getter_test "Sel State: moves" selected_state get_moves
       [ (2, 4); (4, 4) ];
     getter_test "Sel State: captures" selected_state get_caps [];
+    update_test "Sel State: reselect (1, 1) is continue" selected_state
+      (1, 1) assert_continue;
+    update_test "Sel State: move to (3, 4) is illegal" selected_state
+      (3, 4) assert_illegal;
     update_test "Sel State: move to (4, 4) is legal" selected_state
       (4, 4) assert_legal
     (* Moved Piece (3, 3) to (4, 4)*);
@@ -378,36 +368,110 @@ let state_tests =
     urdo_test "P2 State: Undo is {s: (3, 3), f: (4, 4)}" move_state
       Game.State.get_undos m1;
     game_over_test "P2 State: game_over" move_state false;
-    victor_test "P2 State: victor" move_state 0;
-    player_test "P2 State: player nunber" move_state 2;
+    int_test get_vc "P2 State: victor" move_state 0;
+    int_test get_player "P2 State: player nunber" move_state 2;
     unselected_test "P2 State: unselected" move_state true;
     selected_test "P2 State: selected" move_state (-1, -1);
     getter_test "P2 State: moves" move_state get_moves [];
     getter_test "P2 State: captures" move_state get_caps [];
     update_test "P2 State: select (6, 6) is continue" move_state (6, 6)
       assert_continue;
+  ]
+
+(*=========CAPTURE TESTS=========*)
+
+let apply_coord (st : Game.State.t) (coord : int * int) : Game.State.t =
+  st |> new_state coord
+
+let coord_applier (coords : (int * int) list) (st : Game.State.t) =
+  List.fold_left apply_coord st coords
+
+(* Create new state to prevent Stack mutability from crossing to new
+   test cases.*)
+let cap_coords = [ (3, 3); (4, 4); (6, 6); (5, 5); (4, 4) ]
+let cap_state = init_state def_bd |> coord_applier cap_coords
+
+let m2 =
+  { start = (6, 6); finish = (5, 5); cap_sq = (-1, -1); cap_pc = None }
+
+let cap_tests =
+  [
     (* P1 can capture.*)
     game_over_test "P1 Capture State: game_over" cap_state false;
-    victor_test "P1 Capture State: victor" cap_state 0;
-    player_test "P1 Capture State: player nunber" cap_state 1;
+    int_test get_vc "P1 Capture State: victor" cap_state 0;
+    int_test get_player "P1 Capture State: player nunber" cap_state 1;
     unselected_test "P1 Capture State: unselected" cap_state false;
     selected_test "P1 Capture State: selected" cap_state (4, 4);
     getter_test "P1 Capture State: moves" cap_state get_moves [ (3, 5) ];
     getter_test "P1 Capture State: captures" cap_state get_caps
       [ (6, 6) ];
-    update_test "P1 Capture State: select (6, 6) is legal" cap_state
-      (6, 6) assert_legal;
     urdo_len_test "P1 Capture State: 2 undo possible" cap_state
       Game.State.get_undos 2;
     urdo_test "P1 Capture State: Undo is {s: (6, 6), f: (5, 5)}"
-      move_state Game.State.get_undos m1;
+      cap_state Game.State.get_undos m2;
+    update_test "P1 Capture State: select (6, 6) is legal" cap_state
+      (6, 6) assert_legal;
   ]
 
+(*=========MULTICAPTURE TESTS=========*)
+
+let mc_cords =
+  [
+    (3, 3);
+    (2, 4);
+    (2, 6);
+    (1, 5);
+    (2, 4);
+    (3, 5);
+    (3, 7);
+    (2, 6);
+    (4, 2);
+    (3, 3);
+    (4, 6);
+    (2, 4);
+  ]
+
+let mc_state = init_state def_bd |> coord_applier mc_cords
+
+let mc_state2 =
+  init_state def_bd |> coord_applier mc_cords |> new_state (2, 4)
+
+let mc_tests =
+  [
+    (* P2 has just captured, another capture is available.*)
+    game_over_test "P2 MC State: game_over" mc_state false;
+    int_test get_vc "P2 MC State: victor" mc_state 0;
+    int_test get_player "P2 MC State: player number" mc_state 2;
+    unselected_test "P2 MC State: unselected" mc_state true;
+    selected_test "P2 MC State: selected" mc_state (-1, -1);
+    getter_test "P2 MC State: moves" mc_state get_moves [];
+    getter_test "P2 MC State: captures" mc_state get_caps [ (4, 2) ];
+    urdo_len_test "P2 MC State: 2 undo possible" mc_state
+      Game.State.get_undos 6;
+    (* Testing move is impossible due to unknown piece. *)
+    if_mc_test "P2 MC State: state.mc is true" mc_state true;
+    update_test "P2 MC State: select (2, 4) is continue" mc_state (2, 4)
+      assert_continue;
+    update_test "P2 MC State: select (4, 2) is legal" mc_state2 (4, 2)
+      assert_legal;
+  ]
+
+(*=========UNDO & REDO TESTS=========*)
+let urdo_tests = []
+
 (* Add helper functions for testing Canvas here.*)
-let canvas_tests = []
+let canvas_tests = [ (*More like Canvas tests me amirite?*) ]
 
 let suite =
   "test suite for A2"
-  >::: List.flatten [ board_tests; state_tests; canvas_tests ]
+  >::: List.flatten
+         [
+           board_tests;
+           basic_tests;
+           cap_tests;
+           mc_tests;
+           urdo_tests;
+           canvas_tests;
+         ]
 
 let _ = run_test_tt_main suite
