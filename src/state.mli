@@ -48,15 +48,11 @@ val unselected : t -> bool
 val selected : t -> int * int
 (** [num_selected t] returns whether a tile has been selected. *)
 
-val check_victor : t -> t
-(** [check_victor r] returns a new state that has determined whether a
-    player has won or not. *)
-
 val get_if_mc : t -> bool
 (** [get_if_mc t] returns whether the state is in multicapture mode or
     not. *)
 
-val get_past_moves : t -> move list
+val get_undos : t -> move list
 (** [get_past_moves] returns the possible captures in multicapture mode. *)
 
 (** [turn] represents the type of state returned. Continue represents
@@ -75,3 +71,5 @@ val update : t -> int * int -> turn
     provided is an empty square satisfying certain conditions. [turn] is
     Illegal if the first [coord] provided does not contain a piece or
     the second [coord] provided is an illegal checkers move. *)
+
+val urdo : bool -> t -> turn
