@@ -19,7 +19,7 @@ type move = {
 type t = {
   board : Board.t;
   game_over : bool;
-  victor : string;
+  victor : int;
   sel : int * int;
   sel_pc : piece option;
   moves : (int * int) list;
@@ -36,7 +36,7 @@ let init_state (board : Board.t) : t =
   {
     board;
     game_over = false;
-    victor = "";
+    victor = 0;
     sel = (-1, -1);
     sel_pc = None;
     moves = [];
@@ -52,7 +52,11 @@ let init_state (board : Board.t) : t =
 
 let get_board (state : t) : Board.t = state.board
 let game_over (state : t) : bool = state.game_over
-let get_victor (state : t) : string = state.victor
+let get_vc (state : t) : int = state.victor
+
+let get_pts (player : int) (state : t) : int =
+  if player = state.victor then 1 else 0
+
 let get_player (state : t) : int = state.player_turn
 let get_moves (state : t) : (int * int) list = state.moves
 let get_caps (state : t) : (int * int) list = fst state.caps
@@ -62,6 +66,9 @@ let get_if_mc (state : t) : bool = state.mc_pres
 
 let get_undos (state : t) : move list =
   state.undos |> Stack.to_seq |> List.of_seq
+
+let get_redos (state : t) : move list =
+  state.redos |> Stack.to_seq |> List.of_seq
 
 (*=========INDEX FUNCTIONS=========*)
 
@@ -144,7 +151,7 @@ let cap_pc (mv : move) (bd : Board.t) : Board.t =
 let uncap_pc (mv : move) (bd : Board.t) : Board.t =
   add_pc bd (matcher mv.cap_pc) (fst mv.cap_sq) (snd mv.cap_sq)
 
-(*=========STATE MANIPULATION FUNCTIONS=========*)
+(*=========LOW LEVEL STATE MANIPULATION FUNCTIONS=========*)
 
 (** [store_fst_clk coord state] returns a state with selected containing
     [coord], moves containing legal moves from [coord], caps containing
@@ -226,28 +233,30 @@ let check_mc (pc : piece) (state : t) : t =
     }
   else { state with mc_pres = false; mc_pc = None }
 
-(** [check_vc] updates [state] if either of the players have no more
-    pieces.*)
-let check_vc (state : t) : t =
-  if Board.num_pcs_of_pl state.board 1 = 0 then
-    { state with game_over = false; victor = "player 2" }
-  else if Board.num_pcs_of_pl state.board 2 = 0 then
-    { state with game_over = false; victor = "player 1" }
-  else state
-
 (** [pro_pc state coord] attempts to promote a piece that has moved to
     [coord] and returns a new state accordingly. Should occur after
     [check_mc] to prevent post promotion captures.*)
-let pro_pc (pc : piece) (coord : int * int) (state : t) : t =
+let pro_pc (pc : piece) (state : t) : t =
   if is_promotable state.board pc then
     promote_pc state.board pc |> new_bd state
   else state
 
-(** [pipeline move mc coord state] changes [state] depending on the
-    legal second click [coord], whether it is a [move], and whether it
-    is undergoing multicapture. Precondition: Either a move or capture
-    is possible. [coord] is valid move or capture location of selected
-    piece. *)
+(** [check_vc] updates [state] if either of the players have no more
+    pieces.*)
+let check_vc (state : t) : t =
+  if Board.num_pcs_of_pl state.board 1 = 0 then
+    { state with game_over = true; victor = 2 }
+  else if Board.num_pcs_of_pl state.board 2 = 0 then
+    { state with game_over = true; victor = 1 }
+  else state
+
+(*=========HIGH LEVEL STATE MANIPULATION FUNCTIONS=========*)
+
+(** [pipeline is_mv mv pc finish state] changes [state] depending on the
+    legal second tile [finish], whether the change [is_move], and
+    whether it is undergoing multicapture. Precondition: Either a move
+    or capture is possible. [coord] is valid move or capture location of
+    selected piece. *)
 let pipeline
     (is_mv : bool)
     (mv : move)
@@ -258,14 +267,26 @@ let pipeline
   |> mvcap_st is_mv pc finish
   |> reset_st
   |> (if is_mv then Fun.id else check_mc pc)
-  |> (if is_mv then Fun.id else check_vc)
-  |> pro_pc pc finish
+  |> pro_pc pc
+  |> if is_mv then Fun.id else check_vc
 
 let reg_move (is_mv : bool) (finish : int * int) (state : t) : t =
   let pc = matcher state.sel_pc in
   let mv = create_mv is_mv finish state in
+  if Stack.length state.redos > 0 && not (Stack.top state.redos = mv)
+  then Stack.clear state.redos;
   pipeline is_mv mv pc finish state
 
+(** Similar to [reg_move] but uses memory from [state.redos] to perform
+    the move and does not clear [state.redos].*)
+let redo_move (state : t) : t =
+  let r = Stack.pop state.redos in
+  let is_mv = not (bmatcher r.cap_pc) in
+  let pc = get_pc_of_xy r.start state.board in
+  pipeline is_mv r pc r.finish state
+
+(** [uncap_st u state] restores the piece captured by [u] to [state] and
+    returns it. *)
 let uncap_st (u : move) (state : t) : t =
   state.board |> uncap_pc u |> new_bd state
 
@@ -277,12 +298,6 @@ let undo_move (state : t) : t =
   (if u.cap_pc |> bmatcher then uncap_st u state else state)
   |> mvcap_st true (get_pc_of_xy u.finish state.board) u.start
   |> reset_st
-
-let redo_move (state : t) : t =
-  let r = Stack.pop state.redos in
-  let is_mv = not (bmatcher r.cap_pc) in
-  let pc = get_pc_of_xy r.start state.board in
-  pipeline is_mv r pc r.finish state
 
 (*=========UPDATE AND IMMEDIATE HFs=========*)
 
@@ -324,11 +339,9 @@ let update (state : t) (coord : int * int) : turn =
   if state.mc_pres then legal_mc coord state
   else if valid_fst_clk coord state then
     Continue (store_fst_clk coord state)
-  else if (not (unselected state)) && legal_act coord state then begin
-    if Stack.length state.redos > 0 then Stack.clear state.redos;
+  else if (not (unselected state)) && legal_act coord state then
     let legal_move = match_coord coord state.moves in
     Legal (reg_move legal_move coord state)
-  end
   else if valid_reclk coord state then
     Continue (store_fst_clk coord state)
   else Illegal state

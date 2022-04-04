@@ -31,8 +31,10 @@ val get_player : t -> int
 val game_over : t -> bool
 (** [game_over t] returns whether a player has won or not. *)
 
-val get_victor : t -> string
+val get_vc : t -> int
 (** [get_victor t] returns which player has won. *)
+
+val get_pts : int -> t -> int
 
 val get_moves : t -> (int * int) list
 (** [get_moves t] returns which coordinates the selected piece can move
@@ -53,6 +55,9 @@ val get_if_mc : t -> bool
     not. *)
 
 val get_undos : t -> move list
+(** [get_past_moves] returns the possible captures in multicapture mode. *)
+
+val get_redos : t -> move list
 (** [get_past_moves] returns the possible captures in multicapture mode. *)
 
 (** [turn] represents the type of state returned. Continue represents
