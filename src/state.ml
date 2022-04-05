@@ -242,14 +242,14 @@ let switch_tn (state : t) : t =
 (** [check_mc state coord] checks whether the piece that has moved to
     [coord] can capture again without promotion and stores the
     information in state. Precondition: [coord] contains a piece. *)
-let check_mc (mv : move) (state : t) : t =
+let check_mc (reverse : bool) (mv : move) (state : t) : t =
   let pc = mv.pc in
   let caps = poss_captures state.board pc in
   if List.length (fst caps) > 0 then
     {
       state with
       player_turn = pc.player;
-      sel = mv.finish;
+      sel = (if reverse then mv.start else mv.finish);
       sel_pc = Some pc;
       caps;
       mc_pres = true;
@@ -297,7 +297,7 @@ let pipeline (is_mv : bool) (mv : move) (state : t) : t =
   state |> add_mv mv |> mv_st false mv
   |> (if is_mv then Fun.id else cap_st mv)
   |> reset_st |> switch_tn
-  |> (if is_mv then Fun.id else check_mc mv)
+  |> (if is_mv then Fun.id else check_mc false mv)
   |> pro_pc mv
   |> if is_mv then Fun.id else check_vc
 
@@ -318,7 +318,7 @@ let undo_move (state : t) : t =
   state
   |> (if u.cap_pc |> bmatcher then uncap_st u else Fun.id)
   |> mv_st true u |> reset_st
-  |> (if u.mc_pres then check_mc u else rem_mc)
+  |> (if u.mc_pres then check_mc true u else rem_mc)
   |> (if u.prom_pres then Fun.id else Fun.id)
   |> set_tn u.pc.player
 
