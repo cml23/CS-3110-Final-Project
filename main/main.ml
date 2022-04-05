@@ -9,7 +9,7 @@ type t = {
   flip : bool;
 }
 
-let init_st = State.init_state Board.init_board
+let init_st = State.def_state
 
 let init_game =
   let s = init_st in
@@ -41,12 +41,12 @@ let restart_gm (game : t) : t = { game with turn = Legal init_st }
 
 (*=========DRAW FUNCTIONS========*)
 let draw_st (game : t) : _ = game.state |> Game.Canvas.draw
-let draw_cont (st : State.t) : _ = ()
-let draw_leg (st : State.t) : _ = ()
-let draw_illeg (st : State.t) : _ = ()
-
-let draw_turn (game : t) : _ =
-  State.match_turn draw_cont draw_leg draw_illeg game.turn
+let dc (st : State.t) : _ = ()
+let dl (st : State.t) : _ = ()
+let di (st : State.t) : _ = ()
+let du (st : State.t) : _ = ()
+let dr (st : State.t) : _ = ()
+let draw_turn (game : t) : _ = State.match_turn dc dl di du dr game.turn
 
 let highlight (e : Graphics.status) (game : t) : _ =
   game.state |> State.get_board |> Canvas.highlight e

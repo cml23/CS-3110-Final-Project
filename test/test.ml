@@ -275,10 +275,7 @@ let if_mc_test (name : string) (state : Game.State.t) (exp_out : bool) :
 
 let new_state (coord : int * int) (state : Game.State.t) : Game.State.t
     =
-  match update coord state with
-  | Continue s -> s
-  | Legal s -> s
-  | Illegal s -> s
+  update coord state |> get_state
 
 let assert_continue (move : Game.State.turn) : bool =
   match move with
@@ -324,7 +321,7 @@ let urdo_test
   assert_equal exp_out (state |> f |> List.hd) ~printer:string_of_move
 
 (*=========BASIC TESTS=========*)
-let is1 = init_state def_bd
+let is1 = def_state
 let selected_state = new_state (3, 3) is1
 let move_state = new_state (4, 4) selected_state
 
@@ -384,7 +381,7 @@ let coord_applier (coords : (int * int) list) (st : Game.State.t) =
 (* Create new state to prevent Stack mutability from crossing to new
    test cases.*)
 let cap_coords = [ (3, 3); (4, 4); (6, 6); (5, 5); (4, 4) ]
-let cap_state = init_state def_bd |> coord_applier cap_coords
+let cap_state = def_state |> coord_applier cap_coords
 
 let cap_tests =
   [
@@ -423,10 +420,8 @@ let mc_cords =
     (2, 4);
   ]
 
-let mc_state = init_state def_bd |> coord_applier mc_cords
-
-let mc_state2 =
-  init_state def_bd |> coord_applier mc_cords |> new_state (2, 4)
+let mc_state = def_state |> coord_applier mc_cords
+let mc_state2 = def_state |> coord_applier mc_cords |> new_state (2, 4)
 
 let mc_tests =
   [

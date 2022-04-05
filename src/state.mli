@@ -21,9 +21,12 @@ type t
 (** The abstract value representing the game state, including a board,
     win state, winner, undos, and redos. *)
 
-val init_state : Board.t -> t
-(** [init_state Board.t] creates an initial game state based on
+val init_state : int -> Board.t -> t
+(** [init_state init bd] creates an initial game state based on
     [Board.t]. *)
+
+val def_state : t
+(** [def_state] creates the default checkers board. *)
 
 val get_board : t -> Board.t
 (** [get_board t] returns the board stored in state [t] for drawing. *)
@@ -75,6 +78,8 @@ type turn =
   | Continue of t
   | Legal of t
   | Illegal of t
+  | NoUndo of t
+  | NoRedo of t
 
 val update : int * int -> t -> turn
 (** [update coord state] converts a coordinate into a selection or piece
@@ -88,5 +93,13 @@ val urdo : bool -> t -> turn
 (** [urdo undo state] undos [state] by a move if undo is [true] and
     redos a move otherwise. Will always return *)
 
-val match_turn : (t -> 'a) -> (t -> 'a) -> (t -> 'a) -> turn -> 'a
+val match_turn :
+  (t -> 'a) ->
+  (t -> 'a) ->
+  (t -> 'a) ->
+  (t -> 'a) ->
+  (t -> 'a) ->
+  turn ->
+  'a
+
 val get_state : turn -> t

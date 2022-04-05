@@ -38,20 +38,22 @@ type t = {
     the player makes a legal move will information be committed to a
     move in the undos pile. Hence the first glance redundancy.*)
 
-let init_state (board : Board.t) : t =
+let init_state (pl : int) (bd : Board.t) =
   {
-    board;
+    board = bd;
     game_over = false;
     victor = 0;
     sel = (-1, -1);
     sel_pc = None;
     moves = [];
     caps = ([], []);
-    player_turn = 1;
+    player_turn = pl;
     mc_pres = false;
     redos = Stack.create ();
     undos = Stack.create ();
   }
+
+let def_state : t = init_state 1 Board.init_board
 
 (*=========GETTER FUNCTIONS=========*)
 
@@ -175,12 +177,6 @@ let store_fst_clk (coord : int * int) (state : t) : t =
     caps = poss_captures state.board pc;
   }
 
-(** [add_move state pm] returns a state with [pm] prepended to
-    past_moves. Precondition: [pm] is a valid move.*)
-let add_mv (mv : move) (state : t) : t =
-  Stack.push mv state.undos;
-  state
-
 (** [store_move coord state] adds a move or capture to [state] and
     returns it. Precondition: [coord] is a valid second click.*)
 let create_mv (move : bool) (coord : int * int) (state : t) : move =
@@ -206,6 +202,12 @@ let create_mv (move : bool) (coord : int * int) (state : t) : move =
       prom_pres = false;
     }
 
+(** [add_move state pm] returns a state with [pm] prepended to
+    past_moves. Precondition: [pm] is a valid move.*)
+let add_mv (mv : move) (state : t) : t =
+  Stack.push mv state.undos;
+  state
+
 (** [new_bd bd state] returns a state with board [bd] and the selected,
     moves, and caps fields cleared. Precondition: [bd] is the board
     after a legal move has occurred.*)
@@ -213,8 +215,15 @@ let new_bd (state : t) (bd : Board.t) : t = { state with board = bd }
 
 let set_tn (pl : int) (state : t) : t = { state with player_turn = pl }
 
-let switch_tn (state : t) : t =
-  if state.player_turn = 1 then set_tn 2 state else set_tn 1 state
+(** [mvcap_st move pc coord state] returns a state with the selected
+    piece moved to [coord] on the board and the intermittent piece
+    captured if it is a capture. NOTE: Also used by [undo_move], should
+    not reference [undos] stack for non captures.*)
+let mv_st (reverse : bool) (mv : move) (state : t) : t =
+  move_pc reverse mv state.board |> new_bd state
+
+let cap_st (mv : move) (state : t) : t =
+  cap_pc mv state.board |> new_bd state
 
 (** [reset_st state] returns a state with the selected, moves, and caps
     fields cleared. Precondition: a move has just occurred. *)
@@ -227,15 +236,8 @@ let reset_st (state : t) : t =
     caps = ([], []);
   }
 
-(** [mvcap_st move pc coord state] returns a state with the selected
-    piece moved to [coord] on the board and the intermittent piece
-    captured if it is a capture. NOTE: Also used by [undo_move], should
-    not reference [undos] stack for non captures.*)
-let mv_st (reverse : bool) (mv : move) (state : t) : t =
-  move_pc reverse mv state.board |> new_bd state
-
-let cap_st (mv : move) (state : t) : t =
-  cap_pc mv state.board |> new_bd state
+let switch_tn (state : t) : t =
+  if state.player_turn = 1 then set_tn 2 state else set_tn 1 state
 
 (** [check_mc state coord] checks whether the piece that has moved to
     [coord] can capture again without promotion and stores the
@@ -253,8 +255,6 @@ let check_mc (mv : move) (state : t) : t =
       mc_pres = true;
     }
   else { state with mc_pres = false }
-
-let rem_mc (state : t) : t = { state with mc_pres = false }
 
 (** [pro_pc state coord] attempts to promote a piece that has moved to
     [coord] and returns a new state accordingly. Should occur after
@@ -278,6 +278,14 @@ let check_vc (state : t) : t =
     { state with game_over = true; victor = 1 }
   else state
 
+(** [uncap_st u state] restores the piece captured by [u] to [state] and
+    returns it. *)
+let uncap_st (u : move) (state : t) : t =
+  state.board |> uncap_pc u |> new_bd state
+
+(* [rem_mc state] *)
+let rem_mc (state : t) : t = { state with mc_pres = false }
+
 (*=========HIGH LEVEL STATE MANIPULATION FUNCTIONS=========*)
 
 (** [pipeline is_mv mv pc finish state] changes [state] depending on the
@@ -299,11 +307,6 @@ let redo_move (state : t) : t =
   let r = Stack.pop state.redos in
   let is_mv = not (bmatcher r.cap_pc) in
   pipeline is_mv r state
-
-(** [uncap_st u state] restores the piece captured by [u] to [state] and
-    returns it. *)
-let uncap_st (u : move) (state : t) : t =
-  state.board |> uncap_pc u |> new_bd state
 
 (* TODO: Check for umpromotion. *)
 
@@ -335,7 +338,7 @@ let reg_move (is_mv : bool) (finish : int * int) (state : t) : t =
       pipeline is_mv mv state
     end
 
-(*=========ADVANCED INTERFACE & IMMEDIATE HFs=========*)
+(*=========TURN INTERFACE & IMMEDIATE HFs=========*)
 
 (** [turn] represents the type of state returned. Continue represents
     that the current player stays the same and requires new input. Legal
@@ -345,20 +348,13 @@ type turn =
   | Continue of t
   | Legal of t
   | Illegal of t
+  | NoUndo of t
+  | NoRedo of t
 
 (** [legal_action coord state] returns whether second click [coord] is
     located within the possible moves or captures of [state].*)
 let legal_act (coord : int * int) (state : t) : bool =
   match_coord coord state.moves || match_coord coord (fst state.caps)
-
-(** [match_mc_pc f coord state] returns whether [coord] and [state]
-    statisfy function [f] and that [coord] contains the piece undergoing
-    multicapture. Precondition: [f] checks whether [coord] has a piece
-    (* for short circuit evaluation.*) let match_mc_pc f (coord : int *
-    int) (state : t) : bool = f coord state && Some (get_pc_of_xy coord
-    state.board) = state.mc_pc *)
-
-(* TODO: CHANGE TO ALLOW SINGLE CLICKING *)
 
 (** [legal_mc coord state] handles move legality when there is a forced
     multicapture for one player depending on [coord] and [state].*)
@@ -379,17 +375,27 @@ let update (coord : int * int) (state : t) : turn =
   else if unselected state then Continue state
   else Illegal state
 
-let check_do (f : t -> t) (stack : move Stack.t) (state : t) : turn =
-  if Stack.length stack < 1 then Illegal state else Legal (f state)
+(** [check_do f stack state]*)
+let check_do
+    (f : t -> t)
+    (undo : bool)
+    (stack : move Stack.t)
+    (state : t) : turn =
+  if Stack.length stack < 1 then
+    if undo then NoUndo state else NoRedo state
+  else Legal (f state)
 
 let urdo (undo : bool) (state : t) : turn =
-  if undo then check_do undo_move state.undos state
-  else check_do redo_move state.redos state
+  if undo then check_do undo_move undo state.undos state
+  else check_do redo_move undo state.redos state
 
-let match_turn contf legf illegf (tn : turn) =
+let match_turn cf lf ilf uf rf (tn : turn) =
   match tn with
-  | Continue s -> contf s
-  | Legal s -> legf s
-  | Illegal s -> illegf s
+  | Continue s -> cf s
+  | Legal s -> lf s
+  | Illegal s -> ilf s
+  | NoUndo s -> uf s
+  | NoRedo s -> rf s
 
-let get_state (tn : turn) : t = match_turn Fun.id Fun.id Fun.id tn
+let get_state (tn : turn) : t =
+  match_turn Fun.id Fun.id Fun.id Fun.id Fun.id tn
