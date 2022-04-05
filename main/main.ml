@@ -17,21 +17,12 @@ let init_game =
 
 (*=========GAME MANIPULATION FUNCTIONS=========*)
 
-let match_turn contf legf illegf (tn : State.turn) =
-  match tn with
-  | Continue s -> contf s
-  | Legal s -> legf s
-  | Illegal s -> illegf s
-
-let get_state (tn : State.turn) : State.t =
-  match_turn Fun.id Fun.id Fun.id tn
-
 let toggle_fl (game : t) : t = { game with flip = not game.flip }
 
 let change_st (chg : 'a -> State.t -> State.turn) (v : 'a) (game : t) :
     t =
   let nt = chg v game.state in
-  { game with state = get_state nt; turn = nt }
+  { game with state = State.get_state nt; turn = nt }
 
 let process_mv (coord : int * int) (game : t) : t =
   change_st State.update coord game
@@ -55,7 +46,7 @@ let draw_leg (st : State.t) : _ = ()
 let draw_illeg (st : State.t) : _ = ()
 
 let draw_turn (game : t) : _ =
-  match_turn draw_cont draw_leg draw_illeg game.turn
+  State.match_turn draw_cont draw_leg draw_illeg game.turn
 
 let highlight (e : Graphics.status) (game : t) : _ =
   game.state |> State.get_board |> Canvas.highlight e

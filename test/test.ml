@@ -10,18 +10,16 @@ open Game.Canvas
 
 (* Add helper functions for testing Board here.*)
 
-let print_int_pair (p : int * int) =
-  "(" ^ string_of_int (fst p) ^ ", " ^ string_of_int (snd p) ^ ")"
+let string_of_tuple = function
+  | x, y -> "(" ^ string_of_int x ^ ", " ^ string_of_int y ^ ")"
 
-let print_int_pair_opt (p : (int * int) option) =
+let rec string_of_tuple_list (selected : (int * int) list) =
+  "[" ^ String.concat "; " (List.map string_of_tuple selected) ^ "]"
+
+let string_of_tuple_opt (p : (int * int) option) =
   match p with
   | None -> "None"
-  | Some (x, y) -> print_int_pair (x, y)
-
-let rec print_int_pair_list (lst : (int * int) list) =
-  match lst with
-  | [] -> ""
-  | h :: t -> print_int_pair h ^ ", " ^ print_int_pair_list t
+  | Some (x, y) -> string_of_tuple (x, y)
 
 let print_pc pc =
   "{player=" ^ string_of_int pc.player ^ "; id=" ^ string_of_int pc.id
@@ -41,7 +39,7 @@ let print_pc_opt pc_opt =
 
 let print_capture_lst lst =
   "Final locations: "
-  ^ print_int_pair_list (fst lst)
+  ^ string_of_tuple_list (fst lst)
   ^ "\n" ^ "Captured pieces: "
   ^ print_pc_lst (snd lst)
 
@@ -81,7 +79,7 @@ let xy_of_pc_test
     (pc : piece)
     (exp_out : (int * int) option) : test =
   name >:: fun _ ->
-  assert_equal exp_out (xy_of_pc b pc) ~printer:print_int_pair_opt
+  assert_equal exp_out (xy_of_pc b pc) ~printer:string_of_tuple_opt
 
 let neigbor_test
     (name : string)
@@ -91,7 +89,7 @@ let neigbor_test
     (y : int)
     (exp_out : (int * int) option) : test =
   name >:: fun _ ->
-  assert_equal exp_out (adj_fun b x y) ~printer:print_int_pair_opt
+  assert_equal exp_out (adj_fun b x y) ~printer:string_of_tuple_opt
 
 let pc_exists_test
     (name : string)
@@ -108,7 +106,7 @@ let poss_moves_test
     (pc : piece)
     (exp_out : (int * int) list) =
   name >:: fun _ ->
-  assert_equal exp_out (poss_moves b pc) ~printer:print_int_pair_list
+  assert_equal exp_out (poss_moves b pc) ~printer:string_of_tuple_list
 
 let poss_captures_test
     (name : string)
@@ -204,20 +202,18 @@ let board_tests =
   ]
 
 (* Add helper functions for testing State here.*)
-let string_of_tuple = function
-  | x, y -> "(" ^ string_of_int x ^ ", " ^ string_of_int y ^ ")"
-
-let rec string_of_tuple_list (selected : (int * int) list) =
-  "[" ^ String.concat " " (List.map string_of_tuple selected) ^ "]"
 
 let print_state (state : Game.State.t) =
-  "{game_over="
-  ^ (state |> game_over |> string_of_bool)
-  ^ ";\n victor="
-  ^ string_of_int (state |> get_vc)
-  ^ ";\n # squares selected="
-  ^ (state |> unselected |> string_of_bool)
-  ^ "}"
+  String.concat ""
+    [
+      "{game_over=";
+      state |> game_over |> string_of_bool;
+      ";\n victor=";
+      string_of_int (state |> get_vc);
+      ";\n # squares selected=";
+      state |> unselected |> string_of_bool;
+      "}";
+    ]
 
 let string_of_move (mv : Game.State.move) =
   String.concat ""
@@ -332,8 +328,7 @@ let is1 = init_state def_bd
 let selected_state = new_state (3, 3) is1
 let move_state = new_state (4, 4) selected_state
 
-let m1 =
-  { start = (3, 3); finish = (4, 4); cap_sq = (-1, -1); cap_pc = None }
+(* TODO: Test move indirectly *)
 
 let basic_tests =
   [
@@ -365,8 +360,8 @@ let basic_tests =
     (* Moved Piece (3, 3) to (4, 4)*);
     urdo_len_test "P2 State: 1 undo possible" move_state
       Game.State.get_undos 1;
-    urdo_test "P2 State: Undo is {s: (3, 3), f: (4, 4)}" move_state
-      Game.State.get_undos m1;
+    (* urdo_test "P2 State: Undo is {s: (3, 3), f: (4, 4)}" move_state
+       Game.State.get_undos m1; *)
     game_over_test "P2 State: game_over" move_state false;
     int_test get_vc "P2 State: victor" move_state 0;
     int_test get_player "P2 State: player nunber" move_state 2;
@@ -391,9 +386,6 @@ let coord_applier (coords : (int * int) list) (st : Game.State.t) =
 let cap_coords = [ (3, 3); (4, 4); (6, 6); (5, 5); (4, 4) ]
 let cap_state = init_state def_bd |> coord_applier cap_coords
 
-let m2 =
-  { start = (6, 6); finish = (5, 5); cap_sq = (-1, -1); cap_pc = None }
-
 let cap_tests =
   [
     (* P1 can capture.*)
@@ -407,8 +399,8 @@ let cap_tests =
       [ (6, 6) ];
     urdo_len_test "P1 Capture State: 2 undo possible" cap_state
       Game.State.get_undos 2;
-    urdo_test "P1 Capture State: Undo is {s: (6, 6), f: (5, 5)}"
-      cap_state Game.State.get_undos m2;
+    (* urdo_test "P1 Capture State: Undo is {s: (6, 6), f: (5, 5)}"
+       cap_state Game.State.get_undos m2; *)
     update_test "P1 Capture State: select (6, 6) is legal" cap_state
       (6, 6) assert_legal;
   ]
@@ -457,6 +449,10 @@ let mc_tests =
   ]
 
 (*=========UNDO & REDO TESTS=========*)
+let u1_state = mc_state2 |> urdo true |> get_state
+let u2_state = u1_state |> urdo true |> get_state
+let u3_state = u2_state |> urdo true |> get_state
+let r1_state = u2_state |> urdo false |> get_state
 let urdo_tests = []
 
 (* Add helper functions for testing Canvas here.*)

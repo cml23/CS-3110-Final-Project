@@ -8,4 +8,3 @@ let pc_size = 10
 
 let start_x = 130
 let start_y = 80
-let flip = false

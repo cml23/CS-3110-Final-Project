@@ -8,15 +8,18 @@ open Board
 type move = {
   start : int * int;
   finish : int * int;
+  pc : piece;
   cap_sq : int * int;
   cap_pc : piece option;
+  mc_pres : bool;
+  prom_pres : bool;
 }
-(** Public type that stores information about a single move that allows
-    for undoing moves. *)
+(** Public type move that stores a snapshot of abstract type t that
+    allows for undoing moves. *)
 
 type t
 (** The abstract value representing the game state, including a board,
-    win state, winner, and a list of tiles that have been selected. *)
+    win state, winner, undos, and redos. *)
 
 val init_state : Board.t -> t
 (** [init_state Board.t] creates an initial game state based on
@@ -35,6 +38,8 @@ val get_vc : t -> int
 (** [get_victor t] returns which player has won. *)
 
 val get_pts : int -> t -> int
+(** [get_pts player t] returns the number of points the player with id
+    [player] has gotten. Should be called when [gameover] is [true].*)
 
 val get_moves : t -> (int * int) list
 (** [get_moves t] returns which coordinates the selected piece can move
@@ -55,10 +60,12 @@ val get_if_mc : t -> bool
     not. *)
 
 val get_undos : t -> move list
-(** [get_past_moves] returns the possible captures in multicapture mode. *)
+(** [get_undoes state] returns the possible undos for the current state.
+    For testing purposes. *)
 
 val get_redos : t -> move list
-(** [get_past_moves] returns the possible captures in multicapture mode. *)
+(** [get_redos state] returns the possible redos for the current state.
+    For testing purposes. *)
 
 (** [turn] represents the type of state returned. Continue represents
     that the current player stays the same and requires new input. Legal
@@ -78,3 +85,8 @@ val update : int * int -> t -> turn
     the second [coord] provided is an illegal checkers move. *)
 
 val urdo : bool -> t -> turn
+(** [urdo undo state] undos [state] by a move if undo is [true] and
+    redos a move otherwise. Will always return *)
+
+val match_turn : (t -> 'a) -> (t -> 'a) -> (t -> 'a) -> turn -> 'a
+val get_state : turn -> t

@@ -1,20 +1,25 @@
 open Board
 open Stack
 
-exception RemoveNoPiece
 exception NoPiece
+(** [NoPiece] represents whenever the board is indexed in such a way
+    where [None] is return when a piece was expected.*)
 
-exception NoMove
-(** Exceptions for defensive programming to statisfy functino
-    postconditions. *)
+exception NoCap
+(** [NoCap] represents when a retrieval attempt to find the valid
+    capture square fails.*)
 
+(* TODO: Add multicapture and promotion information. *)
 type move = {
   start : int * int;
   finish : int * int;
+  pc : piece;
   cap_sq : int * int;
   cap_pc : piece option;
+  mc_pres : bool;
+  prom_pres : bool;
 }
-(** Stores information about past moves, will be grouped in a stack. *)
+(** Grouped in a stack. *)
 
 type t = {
   board : Board.t;
@@ -30,7 +35,9 @@ type t = {
   redos : move Stack.t;
   undos : move Stack.t;
 }
-(* Should be [""] for no victor, ["player 1"], and ["player 2"] *)
+(** t stores temporary information as the playe clicks around. Only when
+    the player makes a legal move will information be committed to a
+    move in the undos pile. Hence the first glance redundancy.*)
 
 let init_state (board : Board.t) : t =
   {
@@ -72,6 +79,7 @@ let get_redos (state : t) : move list =
 
 (*=========INDEX FUNCTIONS=========*)
 
+(** [bmatcher a]*)
 let bmatcher = function
   | Some b -> true
   | None -> false
@@ -102,7 +110,7 @@ let rec get_idx
     (coord : int * int)
     (acc : int) : int =
   match caps with
-  | [] -> raise NoMove
+  | [] -> raise NoCap
   | h :: t -> if h = coord then acc else get_idx t coord (acc + 1)
 
 (** [get_cap_pc coord state] returns the piece to be captured associated
@@ -137,9 +145,10 @@ let valid_fst_clk (coord : int * int) (state : t) : bool =
 (** [move_pc start finish state] returns a board with a piece moved from
     [start] to [finish]. Precondition: [start] and [finish] are valid
     board coordinates and [start] contains a piece.*)
-let move_pc (pc : piece) (finish : int * int) (bd : Board.t) : Board.t =
-  let start = get_xy_of_pc pc bd in
-  let nbd = add_pc bd pc (fst finish) (snd finish) in
+let move_pc (reverse : bool) (mv : move) (bd : Board.t) : Board.t =
+  let start = if reverse then mv.finish else mv.start in
+  let finish = if reverse then mv.start else mv.finish in
+  let nbd = add_pc bd mv.pc (fst finish) (snd finish) in
   del_pc nbd (fst start) (snd start)
 
 (** [cap_pc pms board] returns a board that carries the first move in
@@ -148,6 +157,7 @@ let move_pc (pc : piece) (finish : int * int) (bd : Board.t) : Board.t =
 let cap_pc (mv : move) (bd : Board.t) : Board.t =
   del_pc bd (fst mv.cap_sq) (snd mv.cap_sq)
 
+(** [uncap_pc mv bd]*)
 let uncap_pc (mv : move) (bd : Board.t) : Board.t =
   add_pc bd (matcher mv.cap_pc) (fst mv.cap_sq) (snd mv.cap_sq)
 
@@ -180,22 +190,33 @@ let create_mv (move : bool) (coord : int * int) (state : t) : move =
     {
       start = state.sel;
       finish = coord;
+      pc = matcher state.sel_pc;
       cap_sq = (-1, -1);
       cap_pc = None;
+      mc_pres = false;
+      prom_pres = false;
     }
   else
     let cpc = get_cap_pc coord state.caps in
     {
       start = state.sel;
       finish = coord;
+      pc = matcher state.sel_pc;
       cap_sq = get_xy_of_pc cpc state.board;
       cap_pc = Some cpc;
+      mc_pres = state.mc_pres;
+      prom_pres = false;
     }
 
 (** [new_bd bd state] returns a state with board [bd] and the selected,
     moves, and caps fields cleared. Precondition: [bd] is the board
     after a legal move has occurred.*)
 let new_bd (state : t) (bd : Board.t) : t = { state with board = bd }
+
+let set_tn (pl : int) (state : t) : t = { state with player_turn = pl }
+
+let switch_tn (state : t) : t =
+  if state.player_turn = 1 then set_tn 2 state else set_tn 1 state
 
 (** [reset_st state] returns a state with the selected, moves, and caps
     fields cleared. Precondition: a move has just occurred. *)
@@ -206,22 +227,23 @@ let reset_st (state : t) : t =
     sel_pc = None;
     moves = [];
     caps = ([], []);
-    player_turn = (if state.player_turn = 1 then 2 else 1);
   }
 
-(** [movecap_st move pc coord state] returns a state with the selected
+(** [mvcap_st move pc coord state] returns a state with the selected
     piece moved to [coord] on the board and the intermittent piece
-    captured if it is a capture. *)
-let mvcap_st (move : bool) (pc : piece) (finish : int * int) (state : t)
-    : t =
-  move_pc pc finish state.board
-  |> (if move then Fun.id else cap_pc (Stack.top state.undos))
-  |> new_bd state
+    captured if it is a capture. NOTE: Also used by [undo_move], should
+    not reference [undos] stack for non captures.*)
+let mv_st (reverse : bool) (mv : move) (state : t) : t =
+  move_pc reverse mv state.board |> new_bd state
+
+let cap_st (mv : move) (state : t) : t =
+  cap_pc mv state.board |> new_bd state
 
 (** [check_mc state coord] checks whether the piece that has moved to
     [coord] can capture again without promotion and stores the
     information in state. Precondition: [coord] contains a piece. *)
-let check_mc (pc : piece) (state : t) : t =
+let check_mc (mv : move) (state : t) : t =
+  let pc = mv.pc in
   let caps = poss_captures state.board pc in
   if List.length (fst caps) > 0 then
     {
@@ -233,12 +255,20 @@ let check_mc (pc : piece) (state : t) : t =
     }
   else { state with mc_pres = false; mc_pc = None }
 
+let rem_mc (state : t) : t =
+  { state with mc_pres = false; mc_pc = None }
+
 (** [pro_pc state coord] attempts to promote a piece that has moved to
     [coord] and returns a new state accordingly. Should occur after
     [check_mc] to prevent post promotion captures.*)
-let pro_pc (pc : piece) (state : t) : t =
-  if is_promotable state.board pc then
-    promote_pc state.board pc |> new_bd state
+let pro_pc (mv : move) (state : t) : t =
+  let pc = mv.pc in
+  if is_promotable state.board pc then (
+    let nmv = { mv with prom_pres = true } in
+    Stack.(
+      pop state.undos;
+      push nmv state.undos);
+    promote_pc state.board pc |> new_bd state)
   else state
 
 (** [check_vc] updates [state] if either of the players have no more
@@ -257,49 +287,57 @@ let check_vc (state : t) : t =
     whether it is undergoing multicapture. Precondition: Either a move
     or capture is possible. [coord] is valid move or capture location of
     selected piece. *)
-let pipeline
-    (is_mv : bool)
-    (mv : move)
-    (pc : piece)
-    (finish : int * int)
-    (state : t) : t =
-  state |> add_mv mv
-  |> mvcap_st is_mv pc finish
-  |> reset_st
-  |> (if is_mv then Fun.id else check_mc pc)
-  |> pro_pc pc
+let pipeline (is_mv : bool) (mv : move) (state : t) : t =
+  state |> add_mv mv |> mv_st false mv
+  |> (if is_mv then Fun.id else cap_st mv)
+  |> reset_st |> switch_tn
+  |> (if is_mv then Fun.id else check_mc mv)
+  |> pro_pc mv
   |> if is_mv then Fun.id else check_vc
-
-let reg_move (is_mv : bool) (finish : int * int) (state : t) : t =
-  let pc = matcher state.sel_pc in
-  let mv = create_mv is_mv finish state in
-  if Stack.length state.redos > 0 && not (Stack.top state.redos = mv)
-  then Stack.clear state.redos;
-  pipeline is_mv mv pc finish state
 
 (** Similar to [reg_move] but uses memory from [state.redos] to perform
     the move and does not clear [state.redos].*)
 let redo_move (state : t) : t =
   let r = Stack.pop state.redos in
   let is_mv = not (bmatcher r.cap_pc) in
-  let pc = get_pc_of_xy r.start state.board in
-  pipeline is_mv r pc r.finish state
+  pipeline is_mv r state
 
 (** [uncap_st u state] restores the piece captured by [u] to [state] and
     returns it. *)
 let uncap_st (u : move) (state : t) : t =
   state.board |> uncap_pc u |> new_bd state
 
-(** Relies heavily on preconditions. Precondition: [state] has a move to
-    undo.*)
+(* TODO: Check for umpromotion. *)
+
+(** [undo_move state] Relies heavily on preconditions. Precondition:
+    [state] has a move to undo.*)
 let undo_move (state : t) : t =
   let u = Stack.pop state.undos in
   Stack.push u state.redos;
-  (if u.cap_pc |> bmatcher then uncap_st u state else state)
-  |> mvcap_st true (get_pc_of_xy u.finish state.board) u.start
-  |> reset_st
+  state
+  |> (if u.cap_pc |> bmatcher then uncap_st u else Fun.id)
+  |> mv_st true u |> reset_st
+  |> (if u.mc_pres then check_mc u else rem_mc)
+  |> (if u.prom_pres then Fun.id else Fun.id)
+  |> set_tn u.pc.player
 
-(*=========UPDATE AND IMMEDIATE HFs=========*)
+(** [check_sf mv finish state]*)
+let match_mv (r : move) (mv : move) : bool =
+  r.start = mv.start && r.finish = mv.finish && r.pc = mv.pc
+
+(* [reg_move is_mv finish state]*)
+let reg_move (is_mv : bool) (finish : int * int) (state : t) : t =
+  let mv = create_mv is_mv finish state in
+  if Stack.length state.redos < 1 then pipeline is_mv mv state
+  else
+    let r = Stack.top state.redos in
+    if match_mv r mv then redo_move state
+    else begin
+      Stack.clear state.redos;
+      pipeline is_mv mv state
+    end
+
+(*=========ADVANCED INTERFACE & IMMEDIATE HFs=========*)
 
 (** [turn] represents the type of state returned. Continue represents
     that the current player stays the same and requires new input. Legal
@@ -335,8 +373,6 @@ let legal_mc (coord : int * int) (state : t) : turn =
     Continue (store_fst_clk coord state)
   else Illegal state
 
-(** [update coord state] returns a turn depending on the validity of
-    [coord] and the current [state]. *)
 let update (coord : int * int) (state : t) : turn =
   if state.mc_pres then legal_mc coord state
   else if valid_fst_clk coord state then
@@ -349,11 +385,17 @@ let update (coord : int * int) (state : t) : turn =
   else if unselected state then Continue state
   else Illegal state
 
-(*=========UNDO AND REDO AND HFs=========*)
-
 let check_do (f : t -> t) (stack : move Stack.t) (state : t) : turn =
   if Stack.length stack < 1 then Illegal state else Legal (f state)
 
 let urdo (undo : bool) (state : t) : turn =
   if undo then check_do undo_move state.undos state
   else check_do redo_move state.redos state
+
+let match_turn contf legf illegf (tn : turn) =
+  match tn with
+  | Continue s -> contf s
+  | Legal s -> legf s
+  | Illegal s -> illegf s
+
+let get_state (tn : turn) : t = match_turn Fun.id Fun.id Fun.id tn
