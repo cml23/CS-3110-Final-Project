@@ -31,7 +31,6 @@ type t = {
   caps : (int * int) list * piece list;
   player_turn : int;
   mc_pres : bool;
-  mc_pc : piece option;
   redos : move Stack.t;
   undos : move Stack.t;
 }
@@ -50,7 +49,6 @@ let init_state (board : Board.t) : t =
     caps = ([], []);
     player_turn = 1;
     mc_pres = false;
-    mc_pc = None;
     redos = Stack.create ();
     undos = Stack.create ();
   }
@@ -249,14 +247,14 @@ let check_mc (mv : move) (state : t) : t =
     {
       state with
       player_turn = pc.player;
+      sel = mv.finish;
+      sel_pc = Some pc;
       caps;
       mc_pres = true;
-      mc_pc = Some pc;
     }
-  else { state with mc_pres = false; mc_pc = None }
+  else { state with mc_pres = false }
 
-let rem_mc (state : t) : t =
-  { state with mc_pres = false; mc_pc = None }
+let rem_mc (state : t) : t = { state with mc_pres = false }
 
 (** [pro_pc state coord] attempts to promote a piece that has moved to
     [coord] and returns a new state accordingly. Should occur after
@@ -356,21 +354,17 @@ let legal_act (coord : int * int) (state : t) : bool =
 (** [match_mc_pc f coord state] returns whether [coord] and [state]
     statisfy function [f] and that [coord] contains the piece undergoing
     multicapture. Precondition: [f] checks whether [coord] has a piece
-    for short circuit evaluation.*)
-let match_mc_pc f (coord : int * int) (state : t) : bool =
-  f coord state && Some (get_pc_of_xy coord state.board) = state.mc_pc
+    (* for short circuit evaluation.*) let match_mc_pc f (coord : int *
+    int) (state : t) : bool = f coord state && Some (get_pc_of_xy coord
+    state.board) = state.mc_pc *)
 
 (* TODO: CHANGE TO ALLOW SINGLE CLICKING *)
 
 (** [legal_mc coord state] handles move legality when there is a forced
     multicapture for one player depending on [coord] and [state].*)
 let legal_mc (coord : int * int) (state : t) : turn =
-  if match_mc_pc valid_fst_clk coord state then
-    Continue (store_fst_clk coord state)
-  else if (not (unselected state)) && match_coord coord (fst state.caps)
-  then Legal (reg_move false coord state)
-  else if match_mc_pc valid_reclk coord state then
-    Continue (store_fst_clk coord state)
+  if match_coord coord (fst state.caps) then
+    Legal (reg_move false coord state)
   else Illegal state
 
 let update (coord : int * int) (state : t) : turn =
