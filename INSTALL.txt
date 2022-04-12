@@ -1,20 +1,28 @@
 This game assumes you have the latest OCaml and Dune installed on your computer.
 
 You will need to install the following packages: 
-yojson, ANSITerminal, onunit2, Graphics. 
+yojson, ANSITerminal, onunit2, Graphics, lablgtk2, camlimages
 
 If you are running Windows, you will need to run the following commands
-in the command line:
+in the command line. You may need to create a new opam switch if you encounter errors 
+(please use the directions found in the course textbook to do so):
 
 sudo apt-get install pkg-config
 opam install graphics
 opam install user-setup
 opam user-setup install
+
+To install lablgtk and camlimages:
+sudo apt-get install libgtk2.0-dev
+opam install lablgtk
+opam install camlimages
+
 Follow these instructions to download an X-server:
 https://www.youtube.com/watch?v=4SZXbl9KVsw
 eval $(opam env)
 export DISPLAY=$(awk '/nameserver / {print $2; exit}' /etc/resolv.conf 2>/dev/null):0
 export LIBGL_ALWAYS_INDIRECT=1
+
 
 If you are running MacOS, you will need to run the following commands
 in the terminal:

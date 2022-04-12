@@ -1,4 +1,4 @@
 (library
  (name game)
  (public_name Game)
- (libraries yojson ANSITerminal ounit2 graphics))
+ (libraries yojson ANSITerminal ounit2 graphics lablgtk2 camlimages.all))
