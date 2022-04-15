@@ -264,7 +264,7 @@ let pro_pc (mv : move) (state : t) : t =
   if is_promotable state.board pc then (
     let nmv = { mv with prom_pres = true } in
     Stack.(
-      pop state.undos;
+      ignore (pop state.undos);
       push nmv state.undos);
     promote_pc state.board pc |> new_bd state)
   else state
