@@ -12,7 +12,6 @@ type move = {
   cap_sq : int * int;
   cap_pc : piece option;
   mc_pres : bool;
-  prom_pres : bool;
 }
 (** Public type move that stores a snapshot of abstract type t that
     allows for undoing moves. *)

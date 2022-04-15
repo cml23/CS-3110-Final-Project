@@ -17,7 +17,6 @@ type move = {
   cap_sq : int * int;
   cap_pc : piece option;
   mc_pres : bool;
-  prom_pres : bool;
 }
 (** Grouped in a stack. *)
 
@@ -34,9 +33,9 @@ type t = {
   redos : move Stack.t;
   undos : move Stack.t;
 }
-(** t stores temporary information as the playe clicks around. Only when
-    the player makes a legal move will information be committed to a
-    move in the undos pile. Hence the first glance redundancy.*)
+(** t stores temporary information as the player clicks around. Only
+    when the player makes a legal move will information be committed to
+    a move in the undos pile. Hence the at first glance redundancy.*)
 
 let init_state (pl : int) (bd : Board.t) =
   {
@@ -188,7 +187,6 @@ let create_mv (move : bool) (coord : int * int) (state : t) : move =
       cap_sq = (-1, -1);
       cap_pc = None;
       mc_pres = false;
-      prom_pres = false;
     }
   else
     let cpc = get_cap_pc coord state.caps in
@@ -199,7 +197,6 @@ let create_mv (move : bool) (coord : int * int) (state : t) : move =
       cap_sq = get_xy_of_pc cpc state.board;
       cap_pc = Some cpc;
       mc_pres = state.mc_pres;
-      prom_pres = false;
     }
 
 (** [add_move state pm] returns a state with [pm] prepended to
@@ -261,12 +258,8 @@ let check_mc (reverse : bool) (mv : move) (state : t) : t =
     [check_mc] to prevent post promotion captures.*)
 let pro_pc (mv : move) (state : t) : t =
   let pc = mv.pc in
-  if is_promotable state.board pc then (
-    let nmv = { mv with prom_pres = true } in
-    Stack.(
-      ignore (pop state.undos);
-      push nmv state.undos);
-    promote_pc state.board pc |> new_bd state)
+  if is_promotable state.board pc then
+    promote_pc state.board pc |> new_bd state
   else state
 
 (** [check_vc] updates [state] if either of the players have no more
@@ -319,7 +312,6 @@ let undo_move (state : t) : t =
   |> (if u.cap_pc |> bmatcher then uncap_st u else Fun.id)
   |> mv_st true u |> reset_st
   |> (if u.mc_pres then check_mc true u else rem_mc)
-  |> (if u.prom_pres then Fun.id else Fun.id)
   |> set_tn u.pc.player
 
 (** [check_sf mv finish state]*)
