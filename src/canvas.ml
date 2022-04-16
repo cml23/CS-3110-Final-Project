@@ -53,22 +53,26 @@ let load_images p =
   p.royal <- Some (Graphic_image.of_image p.image_paths.(3));
   p.soldier2 <- Some (Graphic_image.of_image p.image_paths.(4));
   p.royal2 <- Some (Graphic_image.of_image p.image_paths.(5));
-  p.tiles.(0) <- p.tile1;
-  p.tiles.(1) <- p.tile2
+  p.tiles.(0) <- p.tile1
 
-(*[active_presets] are the presets that the player can choose from.*)
+(**[active_presets] are the presets that the player can choose from.*)
 let active_presets = [| default |]
+
+let turn1_img : Graphics.image option ref = ref None
+let turn2_img : Graphics.image option ref = ref None
+
+let swap_preset idx =
+  if idx + 1 > Array.length active_presets - 1 then 0 else idx + 1
+
 let swap_index (tile_index : int) = if tile_index = 0 then 1 else 0
+let swap_turn (player : int) = if player = 1 then 2 else 1
 
 (**[draw_piece_img img x y] draws the specified image to the appropriate
-   part of the tile.*)
-let draw_piece_img (img : Graphics.image option) (x : int) (y : int) =
+   part of the canvas.*)
+let draw_img (img : Graphics.image option) (x : int) (y : int) =
   match img with
   | None -> ()
-  | Some image ->
-      Graphics.draw_image image
-        (x + (Constants.pc_size / 2))
-        (y + (Constants.pc_size / 2))
+  | Some image -> Graphics.draw_image image x y
 
 (**[draw_piece x y b pc tile_size] draws [pc] to the tile at [x] and
    [y].*)
@@ -81,10 +85,22 @@ let draw_piece
     (p : preset) : unit =
   let open Graphics in
   if pc.player = 1 then
-    if pc.is_royal then draw_piece_img p.royal x y
-    else draw_piece_img p.soldier x y
-  else if pc.is_royal then draw_piece_img p.royal2 x y
-  else draw_piece_img p.soldier2 x y
+    if pc.is_royal then
+      draw_img p.royal
+        (x + (Constants.pc_size / 2))
+        (y + (Constants.pc_size / 2))
+    else
+      draw_img p.soldier
+        (x + (Constants.pc_size / 2))
+        (y + (Constants.pc_size / 2))
+  else if pc.is_royal then
+    draw_img p.royal2
+      (x + (Constants.pc_size / 2))
+      (y + (Constants.pc_size / 2))
+  else
+    draw_img p.soldier2
+      (x + (Constants.pc_size / 2))
+      (y + (Constants.pc_size / 2))
 (*fill_ellipse (x + (tile_size / 2)) (y + (tile_size / 2))
   Constants.pc_size Constants.pc_size;*)
 (* match Board.xy_of_pc b pc with | Some (x, y) -> fill_ellipse x y 40
@@ -191,13 +207,28 @@ let highlight (ev : Graphics.status) (b : Board.t) =
         default 0
 (*need green tile*)
 
+(**[load_turn_img img1 img2] loads [img1] as the player 1 turn text, and
+   [img2] as the player 2 turn text.*)
+let load_turn_img img1 img2 =
+  turn1_img := Some (Graphic_image.of_image (Png.load_as_rgb24 img1 []));
+  turn2_img := Some (Graphic_image.of_image (Png.load_as_rgb24 img2 []))
+
+let draw_turn_img (player : int) x y =
+  if player = 1 then draw_img !turn1_img x y
+  else draw_img !turn2_img x y
+
 let init =
   Graphics.open_graph "";
   (*Images must be loaded after opening graph to avoid errors.*)
-  load_images default
+  load_turn_img "data/player1.png" "data/player2.png";
+  for i = 0 to Array.length active_presets - 1 do
+    load_images active_presets.(i)
+  done
 
-let draw st =
-  (*load_images default;*)
+let draw i player st =
   let b = State.get_board st in
   draw_board Constants.start_x Constants.start_y 1 1 b (Board.dim_y b)
-    Constants.tile_size default 0
+    Constants.tile_size active_presets.(i) 0;
+  draw_turn_img player
+    (Constants.start_x + (Board.dim_x b * (Constants.tile_size + 1)))
+    Constants.start_y

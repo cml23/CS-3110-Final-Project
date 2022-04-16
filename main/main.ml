@@ -12,7 +12,7 @@ type t = {
 let init_st = State.def_state
 
 let init_game =
-  Canvas.init;
+  Game.Canvas.init;
   let s = init_st in
   { p1_sc = 0; p2_sc = 0; state = s; turn = Legal s; flip = false }
 
@@ -41,7 +41,7 @@ let change_sc (game : t) : t =
 let restart_gm (game : t) : t = { game with turn = Legal init_st }
 
 (*=========DRAW FUNCTIONS========*)
-let draw_st (game : t) : _ = game.state |> Game.Canvas.draw
+let draw_st (game : t) : _ = game.state |> Game.Canvas.draw 0 1
 let dc (st : State.t) : _ = ()
 let dl (st : State.t) : _ = ()
 let di (st : State.t) : _ = ()
