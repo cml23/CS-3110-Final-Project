@@ -12,6 +12,7 @@ type t = {
 let init_st = State.def_state
 
 let init_game =
+  Canvas.init;
   let s = init_st in
   { p1_sc = 0; p2_sc = 0; state = s; turn = Legal s; flip = false }
 

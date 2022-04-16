@@ -16,3 +16,5 @@ val mouse_input : Graphics.status -> Board.t -> (int * int) option
 
 val highlight : Graphics.status -> Board.t -> unit
 (**[highlight ev b] highlights the piece clicked by the user in green. *)
+
+val init : unit
