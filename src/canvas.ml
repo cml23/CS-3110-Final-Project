@@ -12,6 +12,8 @@ type preset = {
   mutable tile2 : Graphics.image option;
   mutable soldier : Graphics.image option;
   mutable royal : Graphics.image option;
+  mutable soldier2 : Graphics.image option;
+  mutable royal2 : Graphics.image option;
   tiles : Graphics.image option array;
 }
 
@@ -28,17 +30,17 @@ let default =
         Images.sub
           (Png.load_as_rgb24 "data/tile_white.png" [])
           0 0 Constants.tile_size Constants.tile_size;
-        Images.sub
-          (Png.load_as_rgb24 "data/soldier.png" [])
-          20 20 Constants.pc_size Constants.pc_size;
-        Images.sub
-          (Png.load_as_rgb24 "data/royal.png" [])
-          20 20 Constants.pc_size Constants.pc_size;
+        Png.load_as_rgb24 "data/soldier_resize.png" [];
+        Png.load_as_rgb24 "data/royal_resize.png" [];
+        Png.load_as_rgb24 "data/soldier_resize.png" [];
+        Png.load_as_rgb24 "data/royal_resize.png" [];
       |];
     tile1 = None;
     tile2 = None;
     soldier = None;
     royal = None;
+    soldier2 = None;
+    royal2 = None;
     tiles = [| None; None |];
   }
 
@@ -49,12 +51,24 @@ let load_images p =
   p.tile2 <- Some (Graphic_image.of_image p.image_paths.(1));
   p.soldier <- Some (Graphic_image.of_image p.image_paths.(2));
   p.royal <- Some (Graphic_image.of_image p.image_paths.(3));
+  p.soldier2 <- Some (Graphic_image.of_image p.image_paths.(4));
+  p.royal2 <- Some (Graphic_image.of_image p.image_paths.(5));
   p.tiles.(0) <- p.tile1;
   p.tiles.(1) <- p.tile2
 
 (*[active_presets] are the presets that the player can choose from.*)
 let active_presets = [| default |]
 let swap_index (tile_index : int) = if tile_index = 0 then 1 else 0
+
+(**[draw_piece_img img x y] draws the specified image to the appropriate
+   part of the tile.*)
+let draw_piece_img (img : Graphics.image option) (x : int) (y : int) =
+  match img with
+  | None -> ()
+  | Some image ->
+      Graphics.draw_image image
+        (x + (Constants.pc_size / 2))
+        (y + (Constants.pc_size / 2))
 
 (**[draw_piece x y b pc tile_size] draws [pc] to the tile at [x] and
    [y].*)
@@ -63,17 +77,16 @@ let draw_piece
     (y : int)
     (b : Board.t)
     (pc : Board.piece)
-    (tile_size : int) : unit =
+    (tile_size : int)
+    (p : preset) : unit =
   let open Graphics in
   if pc.player = 1 then
-    if pc.is_royal then set_color (magenta : Graphics.color)
-    else set_color (yellow : Graphics.color)
-  else if pc.is_royal then set_color (blue : Graphics.color)
-  else set_color (cyan : Graphics.color);
-  fill_ellipse
-    (x + (tile_size / 2))
-    (y + (tile_size / 2))
-    Constants.pc_size Constants.pc_size
+    if pc.is_royal then draw_piece_img p.royal x y
+    else draw_piece_img p.soldier x y
+  else if pc.is_royal then draw_piece_img p.royal2 x y
+  else draw_piece_img p.soldier2 x y
+(*fill_ellipse (x + (tile_size / 2)) (y + (tile_size / 2))
+  Constants.pc_size Constants.pc_size;*)
 (* match Board.xy_of_pc b pc with | Some (x, y) -> fill_ellipse x y 40
    40 | None -> ()*)
 
@@ -93,7 +106,7 @@ let rec draw_tile
   | Some v -> (
       Graphics.draw_image v x y;
       match Board.piece_of_xy b row col with
-      | Some pc -> draw_piece x y b pc tile_size
+      | Some pc -> draw_piece x y b pc tile_size p
       | None -> ())
 
 (**[draw_row x y row col b i tile_size color cols] draws a row of [i]
