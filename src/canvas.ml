@@ -32,8 +32,8 @@ let default =
           0 0 Constants.tile_size Constants.tile_size;
         Png.load_as_rgb24 "data/soldier_resize.png" [];
         Png.load_as_rgb24 "data/royal_resize.png" [];
-        Png.load_as_rgb24 "data/soldier_resize.png" [];
-        Png.load_as_rgb24 "data/royal_resize.png" [];
+        Png.load_as_rgb24 "data/soldier2_resize.png" [];
+        Png.load_as_rgb24 "data/royal2_resize.png" [];
       |];
     tile1 = None;
     tile2 = None;
