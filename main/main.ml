@@ -1,12 +1,14 @@
 open Game
 open Graphics
 
+(* Howard Start *)
+
 type t = {
   p1_sc : int;
   p2_sc : int;
   state : State.t;
   turn : State.turn;
-  flip : bool;
+  preset : int;
 }
 
 let init_st = State.def_state
@@ -14,11 +16,9 @@ let init_st = State.def_state
 let init_game =
   Game.Canvas.init;
   let s = init_st in
-  { p1_sc = 0; p2_sc = 0; state = s; turn = Legal s; flip = false }
+  { p1_sc = 0; p2_sc = 0; state = s; turn = Legal s; preset = 0 }
 
 (*=========GAME MANIPULATION FUNCTIONS=========*)
-
-let toggle_fl (game : t) : t = { game with flip = not game.flip }
 
 let change_st (chg : 'a -> State.t -> State.turn) (v : 'a) (game : t) :
     t =
@@ -40,6 +40,9 @@ let change_sc (game : t) : t =
 
 let restart_gm (game : t) : t = { game with turn = Legal init_st }
 
+let change_preset (game : t) : t =
+  { game with preset = Game.Canvas.swap_preset game.preset }
+
 (*=========DRAW FUNCTIONS========*)
 let draw_st (game : t) : _ = game.state |> Game.Canvas.draw 0 1
 let dc (st : State.t) : _ = ()
@@ -55,6 +58,7 @@ let highlight (e : Graphics.status) (game : t) : _ =
 (*=========GAME LOOP=========*)
 let glref = ref (fun a b -> ())
 
+(* [event_handler ]*)
 let rec event_handler glref (game : t) : _ =
   let event = Graphics.wait_next_event [ Button_down; Key_pressed ] in
   let gle = !glref event in
@@ -65,7 +69,7 @@ let rec event_handler glref (game : t) : _ =
   else if event.key = 'z' then game |> urdo_mv true |> gle
   else if event.key = 'x' then game |> urdo_mv false |> gle
   else if event.key = 'r' then game |> restart_gm |> gle
-  else if event.key = 'f' then game |> toggle_fl |> gle
+  else if event.key = 'c' then game |> change_preset |> gle
   else if event.key = 'q' then exit 0
   else game |> gle;
   ()
@@ -89,3 +93,5 @@ let main () =
 
 (* Execute the game engine. *)
 let () = main ()
+
+(* Howard End *)

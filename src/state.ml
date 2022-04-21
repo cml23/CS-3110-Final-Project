@@ -1,6 +1,8 @@
 open Board
 open Stack
 
+(* Howard Start *)
+
 exception NoPiece
 (** [NoPiece] represents whenever the board is indexed in such a way
     where [None] is return when a piece was expected.*)
@@ -9,7 +11,6 @@ exception NoCap
 (** [NoCap] represents when a retrieval attempt to find the valid
     capture square fails.*)
 
-(* TODO: Add multicapture and promotion information. *)
 type move = {
   start : int * int;
   finish : int * int;
@@ -301,8 +302,6 @@ let redo_move (state : t) : t =
   let is_mv = not (bmatcher r.cap_pc) in
   pipeline is_mv r state
 
-(* TODO: Check for umpromotion. *)
-
 (** [undo_move state] Relies heavily on preconditions. Precondition:
     [state] has a move to undo.*)
 let undo_move (state : t) : t =
@@ -314,7 +313,7 @@ let undo_move (state : t) : t =
   |> (if u.mc_pres then check_mc true u else rem_mc)
   |> set_tn u.pc.player
 
-(** [check_sf mv finish state]*)
+(** [match_mv r mv]*)
 let match_mv (r : move) (mv : move) : bool =
   r.start = mv.start && r.finish = mv.finish && r.pc = mv.pc
 
@@ -391,3 +390,5 @@ let match_turn cf lf ilf uf rf (tn : turn) =
 
 let get_state (tn : turn) : t =
   match_turn Fun.id Fun.id Fun.id Fun.id Fun.id tn
+
+(* Howard End *)
