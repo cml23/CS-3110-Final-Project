@@ -41,7 +41,7 @@ let change_sc (game : t) : t =
 let restart_gm (game : t) : t = { game with turn = Legal init_st }
 
 (*=========DRAW FUNCTIONS========*)
-let draw_st (game : t) : _ = game.state |> Game.Canvas.draw 0 1
+let draw_st (game : t) : _ = game.state |> Game.Canvas.draw 0
 let dc (st : State.t) : _ = ()
 let dl (st : State.t) : _ = ()
 let di (st : State.t) : _ = ()

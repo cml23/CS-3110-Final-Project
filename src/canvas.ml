@@ -65,7 +65,6 @@ let swap_preset idx =
   if idx + 1 > Array.length active_presets - 1 then 0 else idx + 1
 
 let swap_index (tile_index : int) = if tile_index = 0 then 1 else 0
-let swap_turn (player : int) = if player = 1 then 2 else 1
 
 (**[draw_piece_img img x y] draws the specified image to the appropriate
    part of the canvas.*)
@@ -225,10 +224,10 @@ let init =
     load_images active_presets.(i)
   done
 
-let draw i player st =
+let draw i st =
   let b = State.get_board st in
   draw_board Constants.start_x Constants.start_y 1 1 b (Board.dim_y b)
     Constants.tile_size active_presets.(i) 0;
-  draw_turn_img player
+  draw_turn_img (State.get_player st)
     (Constants.start_x + (Board.dim_x b * (Constants.tile_size + 1)))
     Constants.start_y
