@@ -25,10 +25,10 @@ let default =
     image_paths =
       [|
         Images.sub
-          (Png.load_as_rgb24 "data/tile_black.png" [])
+          (Png.load_as_rgb24 "data/tile1.png" [])
           0 0 Constants.tile_size Constants.tile_size;
         Images.sub
-          (Png.load_as_rgb24 "data/tile_white.png" [])
+          (Png.load_as_rgb24 "data/tile2.png" [])
           0 0 Constants.tile_size Constants.tile_size;
         Png.load_as_rgb24 "data/soldier_resize.png" [];
         Png.load_as_rgb24 "data/royal_resize.png" [];
