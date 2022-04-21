@@ -44,7 +44,7 @@ let change_preset (game : t) : t =
   { game with preset = Game.Canvas.swap_preset game.preset }
 
 (*=========DRAW FUNCTIONS========*)
-let draw_st (game : t) : _ = game.state |> Game.Canvas.draw 0
+let draw_st (game : t) : _ = game.state |> Game.Canvas.draw 0 1
 let dc (st : State.t) : _ = ()
 let dl (st : State.t) : _ = ()
 let di (st : State.t) : _ = ()
@@ -94,11 +94,10 @@ let main () =
 (* Execute the game engine. *)
 let () = main ()
 
-<<<<<<< HEAD
 (* Howard End *)
-=======
+
 (* Functions added by Anirudh *)
 let to_json = failwith "unimplimented"
 let from_json = failwith "unimplimented"
+
 (* END *)
->>>>>>> a7381bc8380206d5941fcdefc0ceaa44b64dfae2
