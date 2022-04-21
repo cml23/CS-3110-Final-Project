@@ -83,9 +83,6 @@ let init_board : t =
     |],
     8 )
 
-(*let from_json json = raise (Failure "Unimplemented:
-  Board.from_json") *)
-
 let get_x (b : t) i = ((i - 1) mod snd b) + 1
 let get_y (b : t) i = ((i - 1) / snd b) + 1
 let get_idx (b : t) x y = (snd b * (y - 1)) + x
