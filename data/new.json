@@ -1,31 +1,37 @@
 {
-  "tiles": [
-    {
-      "player": 2,
-      "id": 1,
-      "tile": 62
-    },
-    {
-      "player": 2,
-      "id": 2,
-      "tile": 49
-    },
-    {
-      "player": 2,
-      "id": 3,
-      "tile": 50
-    },
-    {
-      "player": 1,
-      "id": 4,
-      "tile": 10
-    },
-    {
-      "player": 1,
-      "id": 5,
-      "tile": 12
-    }
-  ],
-  "columns": 8,
-  "rows": 8
+  "board": {
+    "tiles": [
+      {
+        "player": 2,
+        "id": 1,
+        "tile": 62
+      },
+      {
+        "player": 2,
+        "id": 2,
+        "tile": 49
+      },
+      {
+        "player": 2,
+        "id": 3,
+        "tile": 50
+      },
+      {
+        "player": 1,
+        "id": 4,
+        "tile": 10
+      },
+      {
+        "player": 1,
+        "id": 5,
+        "tile": 12
+      }
+    ],
+    "columns": 8,
+    "rows": 8
+  },
+  "turn": 1,
+  "player 1 score": 0,
+  "player 2 score": 0,
+  "preset": 0
 }

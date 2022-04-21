@@ -101,7 +101,21 @@ let () = main ()
 (* The json representation of the game stores the current board, the
    current player turn, and the multi-game score tally. *)
 
-let to_json = failwith "unimplemented"
-let from_json = failwith "unimplemented"
+let to_json g = failwith "unimplemented"
+
+let from_json json : t =
+  let open Yojson.Basic.Util in
+  let st =
+    State.init_state
+      (json |> member "turn" |> to_int)
+      (Board.from_json (json |> member "board"))
+  in
+  {
+    p1_sc = json |> member "player 1 score" |> to_int;
+    p2_sc = json |> member "player 2 score" |> to_int;
+    preset = json |> member "preset" |> to_int;
+    state = st;
+    turn = Continue st;
+  }
 
 (* END functions added by Anirudh. *)
