@@ -160,6 +160,13 @@ let rec draw_board
     draw_board x (y + tile_size) row (col + 1) b (y_dim - 1) tile_size p
       (swap_index tile_index)
 
+(**[get_coordinate i dim_start] calculates the coordinate of a tile from
+   its pixel location on the screen.*)
+let get_coordinate i dim_start =
+  (float_of_int i -. float_of_int dim_start)
+  /. float_of_int Constants.tile_size
+  |> Float.floor |> ( +. ) 1. |> int_of_float
+
 (**[find_tile x y start_x start_y] is the tile at [(x,y)] on the board
    where the bottom left hand corner of tile (1,1) is at position
    [(start_x, start_y)]*)
@@ -170,16 +177,8 @@ let rec find_tile x y start_x start_y b =
     || x < start_x || y < start_y
   then None
   else
-    let tile_x =
-      (float_of_int x -. float_of_int start_x)
-      /. float_of_int Constants.tile_size
-      |> Float.floor |> ( +. ) 1. |> int_of_float
-    in
-    let tile_y =
-      (float_of_int y -. float_of_int start_y)
-      /. float_of_int Constants.tile_size
-      |> Float.floor |> ( +. ) 1. |> int_of_float
-    in
+    let tile_x = get_coordinate x start_x in
+    let tile_y = get_coordinate y start_y in
     Some
       ( tile_x,
         tile_y,
