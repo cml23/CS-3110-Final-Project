@@ -89,3 +89,8 @@ let main () =
 
 (* Execute the game engine. *)
 let () = main ()
+
+(* Functions added by Anirudh *)
+let to_json = failwith "unimplimented"
+let from_json = failwith "unimplimented"
+(* END *)
