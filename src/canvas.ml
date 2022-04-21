@@ -32,8 +32,8 @@ let default =
           0 0 Constants.tile_size Constants.tile_size;
         Png.load_as_rgb24 "data/soldier_resize.png" [];
         Png.load_as_rgb24 "data/royal_resize.png" [];
-        Png.load_as_rgb24 "data/soldier_resize.png" [];
-        Png.load_as_rgb24 "data/royal_resize.png" [];
+        Png.load_as_rgb24 "data/soldier2_resize.png" [];
+        Png.load_as_rgb24 "data/royal2_resize.png" [];
       |];
     tile1 = None;
     tile2 = None;
@@ -212,8 +212,9 @@ let load_turn_img img1 img2 =
   turn2_img := Some (Graphic_image.of_image (Png.load_as_rgb24 img2 []))
 
 let draw_turn_img (player : int) x y =
-  if player = 1 then draw_img !turn1_img x y
-  else draw_img !turn2_img x y
+  Graphics.moveto x y;
+  if player = 1 then Graphics.draw_string "Player 1"
+  else Graphics.draw_string "Player 2"
 
 let init =
   Graphics.open_graph "";
