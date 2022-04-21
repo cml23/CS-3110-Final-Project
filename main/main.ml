@@ -97,7 +97,11 @@ let () = main ()
 (* Howard End *)
 
 (* Functions added by Anirudh *)
-let to_json = failwith "unimplimented"
-let from_json = failwith "unimplimented"
 
-(* END *)
+(* The json representation of the game stores the current board, the
+   current player turn, and the multi-game score tally. *)
+
+let to_json = failwith "unimplemented"
+let from_json = failwith "unimplemented"
+
+(* END functions added by Anirudh. *)
