@@ -447,7 +447,8 @@ let mc_tests =
 let u1_state = mc_state2 |> urdo true |> get_state
 let u2_state = u1_state |> urdo true |> get_state
 let u3_state = u2_state |> urdo true |> get_state
-let r1_state = u2_state |> urdo false |> get_state
+
+(* let r1_state = u2_state |> urdo false |> get_state *)
 let urdo_tests = []
 
 (* Add helper functions for testing Canvas here.*)
