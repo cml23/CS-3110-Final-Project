@@ -244,9 +244,35 @@ let is_promotable (b : t) (pc : piece) =
       let row_max = Array.length (fst b) / snd b in
       (pc.player = 1 && y = row_max) || (pc.player = 2 && y = 1)
 
-(* TODO: Encapsulate 4 neighbor functions, get_x, get_y, get_idx. *)
+let json_of_tiles (tiles : tile array) : Yojson.Basic.t list =
+  let lst = ref [] in
+  for i = 0 to Array.length tiles - 1 do
+    match tiles.(i) with
+    | None -> ()
+    | Some { player; id; is_royal } ->
+        lst :=
+          !lst
+          @ [
+              `Assoc
+                [
+                  ("player", `Int player);
+                  ("id", `Int id);
+                  ("tile", `Int (i + 1));
+                  ("is_royal", `Bool is_royal);
+                ];
+            ]
+  done;
+  !lst
 
-(* TODO: add tests for poss_move, poss_captures, add_pc. *)
+let to_json (b : t) : Yojson.Basic.t =
+  `Assoc
+    [
+      ("tiles", `List (json_of_tiles (fst b)));
+      ("columns", `Int (snd b));
+      ("row", `Int (Array.length (fst b) / snd b));
+    ]
+
+(* TODO: Encapsulate 4 neighbor functions, get_x, get_y, get_idx. *)
 
 (* FUNCTIONS ADDED BY CASSIDY BELOW. *)
 
@@ -260,7 +286,7 @@ let tile_of_json (a : tile array) json : unit =
       {
         player = json |> member "player" |> to_int;
         id = json |> member "id" |> to_int;
-        is_royal = false;
+        is_royal = json |> member "is_royal" |> to_bool;
       }
   in
   a.(pos - 1) <- tile

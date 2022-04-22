@@ -105,6 +105,9 @@ val is_promotable : t -> piece -> bool
     promotable. This is true if [pc.is_royal=false] and [pc] is at the
     opposite end of the board from which it started. *)
 
+val to_json : t -> Yojson.Basic.t
+(** [to_json b] is the json representation of board [b]. *)
+
 val from_json : Yojson.Basic.t -> t
 (**[from_json json] is the board represented by [json]. Requires: [json]
    is a valid JSON representation of a board.*)

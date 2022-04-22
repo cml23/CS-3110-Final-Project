@@ -4,27 +4,32 @@
       {
         "player": 2,
         "id": 1,
-        "tile": 62
+        "tile": 62,
+        "is_royal": false
       },
       {
         "player": 2,
         "id": 2,
-        "tile": 49
+        "tile": 49,
+        "is_royal": false
       },
       {
         "player": 2,
         "id": 3,
-        "tile": 50
+        "tile": 50,
+        "is_royal": false
       },
       {
         "player": 1,
         "id": 4,
-        "tile": 10
+        "tile": 10,
+        "is_royal": false
       },
       {
         "player": 1,
         "id": 5,
-        "tile": 12
+        "tile": 12,
+        "is_royal": false
       }
     ],
     "columns": 8,
