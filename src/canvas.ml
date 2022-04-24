@@ -44,6 +44,57 @@ let default =
     tiles = [| None; None |];
   }
 
+(**[yellow_purple] is a preset with a yellow and purple board and
+   pieces.*)
+let yellow_purple =
+  {
+    image_paths =
+      [|
+        Images.sub
+          (Png.load_as_rgb24 "data/tile3.png" [])
+          0 0 Constants.tile_size Constants.tile_size;
+        Images.sub
+          (Png.load_as_rgb24 "data/tile4.png" [])
+          0 0 Constants.tile_size Constants.tile_size;
+        Png.load_as_rgb24 "data/soldier3_resize.png" [];
+        Png.load_as_rgb24 "data/royal_resize.png" [];
+        Png.load_as_rgb24 "data/soldier_resize.png" [];
+        Png.load_as_rgb24 "data/royal2_resize.png" [];
+      |];
+    tile1 = None;
+    tile2 = None;
+    soldier = None;
+    royal = None;
+    soldier2 = None;
+    royal2 = None;
+    tiles = [| None; None |];
+  }
+
+(**[orange_blue] is a preset with a yellow and purple board and pieces.*)
+let orange_blue =
+  {
+    image_paths =
+      [|
+        Images.sub
+          (Png.load_as_rgb24 "data/tile5.png" [])
+          0 0 Constants.tile_size Constants.tile_size;
+        Images.sub
+          (Png.load_as_rgb24 "data/tile6.png" [])
+          0 0 Constants.tile_size Constants.tile_size;
+        Png.load_as_rgb24 "data/soldier5_resize.png" [];
+        Png.load_as_rgb24 "data/royal5_resize.png" [];
+        Png.load_as_rgb24 "data/soldier6_resize.png" [];
+        Png.load_as_rgb24 "data/royal6_resize.png" [];
+      |];
+    tile1 = None;
+    tile2 = None;
+    soldier = None;
+    royal = None;
+    soldier2 = None;
+    royal2 = None;
+    tiles = [| None; None |];
+  }
+
 (**[make_transparent pc] converts the background of a piece image [pc]
    from black to transparent.*)
 let make_transparent pc =
@@ -76,7 +127,7 @@ let load_images p =
   p.tiles.(1) <- p.tile2
 
 (**[active_presets] are the presets that the player can choose from.*)
-let active_presets = [| default |]
+let active_presets = [| default; yellow_purple; orange_blue |]
 
 let turn1_img : Graphics.image option ref = ref None
 let turn2_img : Graphics.image option ref = ref None
@@ -252,4 +303,4 @@ let draw i st =
     (Constants.start_x + (Board.dim_x b * (Constants.tile_size + 1)))
     Constants.start_y;
   draw_board Constants.start_x Constants.start_y 1 1 b (Board.dim_y b)
-    Constants.tile_size active_presets.(i) 0
+    Constants.tile_size active_presets.(2) 0
