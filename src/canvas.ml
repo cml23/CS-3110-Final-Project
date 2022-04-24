@@ -44,16 +44,36 @@ let default =
     tiles = [| None; None |];
   }
 
+(**[make_transparent pc] converts the background of a piece image [pc]
+   from black to transparent.*)
+let make_transparent pc =
+  match pc with
+  | Some img ->
+      let image = Graphics.dump_image img in
+      for i = 0 to Array.length image - 1 do
+        let row = image.(i) in
+        for j = 0 to Array.length row - 1 do
+          if row.(j) = 0 then row.(j) <- Graphics.transp else ()
+        done
+      done;
+      Some (Graphics.make_image image)
+  | None -> pc
+
 (**[load_images p] assigns the appropriate image stored in [p]'s
    [image_paths] to the fields of [p].*)
 let load_images p =
   p.tile1 <- Some (Graphic_image.of_image p.image_paths.(0));
   p.tile2 <- Some (Graphic_image.of_image p.image_paths.(1));
-  p.soldier <- Some (Graphic_image.of_image p.image_paths.(2));
-  p.royal <- Some (Graphic_image.of_image p.image_paths.(3));
-  p.soldier2 <- Some (Graphic_image.of_image p.image_paths.(4));
-  p.royal2 <- Some (Graphic_image.of_image p.image_paths.(5));
-  p.tiles.(0) <- p.tile1
+  p.soldier <-
+    Some (Graphic_image.of_image p.image_paths.(2)) |> make_transparent;
+  p.royal <-
+    Some (Graphic_image.of_image p.image_paths.(3)) |> make_transparent;
+  p.soldier2 <-
+    Some (Graphic_image.of_image p.image_paths.(4)) |> make_transparent;
+  p.royal2 <-
+    Some (Graphic_image.of_image p.image_paths.(5)) |> make_transparent;
+  p.tiles.(0) <- p.tile1;
+  p.tiles.(1) <- p.tile2
 
 (**[active_presets] are the presets that the player can choose from.*)
 let active_presets = [| default |]
@@ -211,10 +231,12 @@ let load_turn_img img1 img2 =
   turn1_img := Some (Graphic_image.of_image (Png.load_as_rgb24 img1 []));
   turn2_img := Some (Graphic_image.of_image (Png.load_as_rgb24 img2 []))
 
+let turn_img = ref "Player 1"
+
 let draw_turn_img (player : int) x y =
   Graphics.moveto x y;
-  if player = 1 then Graphics.draw_string "Player 1"
-  else Graphics.draw_string "Player 2"
+  if player = 1 then turn_img := "Player 1" else turn_img := "Player 2";
+  Graphics.draw_string !turn_img
 
 let init =
   Graphics.open_graph "";
@@ -226,8 +248,8 @@ let init =
 
 let draw i st =
   let b = State.get_board st in
-  draw_board Constants.start_x Constants.start_y 1 1 b (Board.dim_y b)
-    Constants.tile_size active_presets.(i) 0;
   draw_turn_img (State.get_player st)
     (Constants.start_x + (Board.dim_x b * (Constants.tile_size + 1)))
-    Constants.start_y
+    Constants.start_y;
+  draw_board Constants.start_x Constants.start_y 1 1 b (Board.dim_y b)
+    Constants.tile_size active_presets.(i) 0
