@@ -1,5 +1,4 @@
 open Game
-open Graphics
 
 (* Howard Start *)
 

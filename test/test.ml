@@ -4,9 +4,13 @@ open Game.State
 open Game.Board
 open Game.Canvas
 
-(* TODO: add unit tests for modules below. You are free to reorganize
-   the definitions below. Just keep it clear which tests are for which
-   modules. *)
+(* TESTING PHILOSPHY: BLACK BOX & PLAY TESTING *)
+(* Due to the impossibility in testing every possible attribute in a
+   given board or state, the difficulty of white box testing in the
+   Board and State modules, and the graphical nature of the Canvas
+   module - our team has opted for black box and play testing.*)
+(* The Board, State, and Canvas modules were all subject to both black
+   box and playtesting.*)
 
 (* Add helper functions for testing Board here.*)
 
@@ -322,7 +326,7 @@ let urdo_test
 
 (*=========BASIC TESTS=========*)
 let is1 = def_state
-let selected_state = new_state (3, 3) is1
+let selected_state = new_state (3, 3) def_state
 let move_state = new_state (4, 4) selected_state
 
 (* TODO: Test move indirectly *)

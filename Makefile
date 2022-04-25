@@ -28,5 +28,5 @@ clean:
 	dune clean
 	rm -f checkers.zip
 
-doc:
+docs:
 	dune build @doc
