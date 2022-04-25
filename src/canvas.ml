@@ -303,4 +303,4 @@ let draw i st =
     (Constants.start_x + (Board.dim_x b * (Constants.tile_size + 1)))
     Constants.start_y;
   draw_board Constants.start_x Constants.start_y 1 1 b (Board.dim_y b)
-    Constants.tile_size active_presets.(2) 0
+    Constants.tile_size active_presets.(i) 0

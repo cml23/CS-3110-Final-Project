@@ -44,7 +44,7 @@ let change_preset (game : t) : t =
   { game with preset = Game.Canvas.swap_preset game.preset }
 
 (*=========DRAW FUNCTIONS========*)
-let draw_st (game : t) : _ = game.state |> Game.Canvas.draw 0
+let draw_st (game : t) : _ = game.state |> Game.Canvas.draw game.preset
 let dc (st : State.t) : _ = ()
 let dl (st : State.t) : _ = ()
 let di (st : State.t) : _ = ()
