@@ -55,45 +55,6 @@ let draw_turn (game : t) : _ = State.match_turn dc dl di du dr game.turn
 let highlight (e : Graphics.status) (game : t) : _ =
   game.state |> State.get_board |> Canvas.highlight e
 
-(*=========GAME LOOP=========*)
-(* [glref event game] stores [game_loop] as a *)
-let gl_ref = ref (fun a b -> ())
-
-(* [event_handler glref game]*)
-let rec event_handler glref (game : t) : _ =
-  let event = Graphics.wait_next_event [ Button_down; Key_pressed ] in
-  let gle = !glref event in
-  if event.button then
-    match Canvas.mouse_input event Game.Board.init_board with
-    | Some coord -> game |> process_mv coord |> gle
-    | None -> game |> gle
-  else if event.key = 'z' then game |> urdo_mv true |> gle
-  else if event.key = 'x' then game |> urdo_mv false |> gle
-  else if event.key = 'r' then game |> restart_gm |> gle
-  else if event.key = 'c' then game |> change_preset |> gle
-  else if event.key = 'q' then exit 0
-  else game |> gle;
-  ()
-
-(* [game_loop e game]*)
-let rec game_loop (e : Graphics.status) (game : t) : _ =
-  (* if State.game_over game.state then let game = (change_sc game); *)
-  draw_st game;
-  draw_turn game;
-  if e.button then highlight e game else ();
-  event_handler gl_ref game;
-  ()
-
-(* [start_game game]*)
-let start_game game =
-  draw_st game;
-  gl_ref := game_loop;
-  event_handler gl_ref game;
-  ()
-
-(* [default_game]*)
-let default_game = init_game |> start_game
-
 (*=========LOADERS=========*)
 
 (* Functions added by Anirudh *)
@@ -128,6 +89,45 @@ let from_json json : t =
 
 (* END functions added by Anirudh. *)
 
+(*=========GAME LOOP=========*)
+(* [glref event game] stores [game_loop] as a *)
+let gl_ref = ref (fun a b -> ())
+
+(* [event_handler glref game]*)
+let rec event_handler glref (game : t) : _ =
+  let event = Graphics.wait_next_event [ Button_down; Key_pressed ] in
+  let gle = !glref event in
+  if event.button then
+    match Canvas.mouse_input event Game.Board.init_board with
+    | Some coord -> game |> process_mv coord |> gle
+    | None -> game |> gle
+  else if event.key = 'z' then game |> urdo_mv true |> gle
+  else if event.key = 'x' then game |> urdo_mv false |> gle
+  else if event.key = 'r' then game |> restart_gm |> gle
+  else if event.key = 'c' then game |> change_preset |> gle
+  else if event.key = 's' then game |> to_json |> ignore
+  else if event.key = 'q' then exit 0
+  else game |> gle;
+  ()
+
+(* [game_loop e game]*)
+let rec game_loop (e : Graphics.status) (game : t) : _ =
+  (* if State.game_over game.state then let game = (change_sc game); *)
+  draw_st game;
+  draw_turn game;
+  if e.button then highlight e game else ();
+  event_handler gl_ref game;
+  ()
+
+(* [start_game game]*)
+let start_game game =
+  draw_st game;
+  gl_ref := game_loop;
+  event_handler gl_ref game;
+  ()
+
+(* [default_game]*)
+let default_game = init_game |> start_game
 let data_dir_prefix = "data" ^ Filename.dir_sep
 
 (* [gf_ref] stores [game_loop] as a *)
