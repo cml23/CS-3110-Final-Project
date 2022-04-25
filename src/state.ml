@@ -31,8 +31,8 @@ type t = {
   caps : (int * int) list * piece list;
   player_turn : int;
   mc_pres : bool;
-  redos : move Stack.t;
-  undos : move Stack.t;
+  redos : move list;
+  undos : move list;
 }
 (** t stores temporary information as the player clicks around. Only
     when the player makes a legal move will information be committed to
@@ -49,8 +49,8 @@ let init_state (pl : int) (bd : Board.t) =
     caps = ([], []);
     player_turn = pl;
     mc_pres = false;
-    redos = Stack.create ();
-    undos = Stack.create ();
+    redos = [];
+    undos = [];
   }
 
 let def_state : t = init_state 1 Board.init_board
@@ -70,12 +70,8 @@ let get_caps (state : t) : (int * int) list = fst state.caps
 let unselected (state : t) : bool = state.sel = (-1, -1)
 let selected (state : t) : int * int = state.sel
 let get_if_mc (state : t) : bool = state.mc_pres
-
-let get_undos (state : t) : move list =
-  state.undos |> Stack.to_seq |> List.of_seq
-
-let get_redos (state : t) : move list =
-  state.redos |> Stack.to_seq |> List.of_seq
+let get_undos (state : t) : move list = state.undos
+let get_redos (state : t) : move list = state.redos
 
 (*=========INDEX FUNCTIONS=========*)
 
@@ -200,11 +196,21 @@ let create_mv (move : bool) (coord : int * int) (state : t) : move =
       mc_pres = state.mc_pres;
     }
 
-(** [add_move state pm] returns a state with [pm] prepended to
-    past_moves. Precondition: [pm] is a valid move.*)
-let add_mv (mv : move) (state : t) : t =
-  Stack.push mv state.undos;
-  state
+(** [add_mv mv undo state] returns a state with move [mv] prepended to
+    past_moves. Precondition: [mv] is a valid move.*)
+let add_mv (mv : move) (undo : bool) (state : t) : t =
+  if undo then { state with undos = mv :: state.undos }
+  else { state with redos = mv :: state.redos }
+
+(** [rem_mv undo state] takes a state and relocates a move from the undo
+    stack to the redo stack if undo is false and vice versa if redo is
+    false.*)
+let rem_mv (undo : bool) (state : t) : t =
+  if undo then { state with undos = List.tl state.undos }
+  else { state with redos = List.tl state.redos }
+
+(* [clear_redo state] removes and moves in the redo stack.*)
+let clear_redo (state : t) : t = { state with redos = [] }
 
 (** [new_bd bd state] returns a state with board [bd] and the selected,
     moves, and caps fields cleared. Precondition: [bd] is the board
@@ -288,7 +294,7 @@ let rem_mc (state : t) : t = { state with mc_pres = false }
     or capture is possible. [coord] is valid move or capture location of
     selected piece. *)
 let pipeline (is_mv : bool) (mv : move) (state : t) : t =
-  state |> add_mv mv |> mv_st false mv
+  state |> add_mv mv true |> mv_st false mv
   |> (if is_mv then Fun.id else cap_st mv)
   |> reset_st |> switch_tn
   |> (if is_mv then Fun.id else check_mc false mv)
@@ -298,16 +304,15 @@ let pipeline (is_mv : bool) (mv : move) (state : t) : t =
 (** Similar to [reg_move] but uses memory from [state.redos] to perform
     the move and does not clear [state.redos].*)
 let redo_move (state : t) : t =
-  let r = Stack.pop state.redos in
+  let r = List.hd state.redos in
   let is_mv = not (bmatcher r.cap_pc) in
-  pipeline is_mv r state
+  state |> rem_mv false |> pipeline is_mv r
 
 (** [undo_move state] Relies heavily on preconditions. Precondition:
     [state] has a move to undo.*)
 let undo_move (state : t) : t =
-  let u = Stack.pop state.undos in
-  Stack.push u state.redos;
-  state
+  let u = List.hd state.undos in
+  state |> rem_mv true |> add_mv u false
   |> (if u.cap_pc |> bmatcher then uncap_st u else Fun.id)
   |> mv_st true u |> reset_st
   |> (if u.mc_pres then check_mc true u else rem_mc)
@@ -320,14 +325,11 @@ let match_mv (r : move) (mv : move) : bool =
 (* [reg_move is_mv finish state]*)
 let reg_move (is_mv : bool) (finish : int * int) (state : t) : t =
   let mv = create_mv is_mv finish state in
-  if Stack.length state.redos < 1 then pipeline is_mv mv state
+  if List.length state.redos < 1 then pipeline is_mv mv state
   else
-    let r = Stack.top state.redos in
+    let r = List.hd state.redos in
     if match_mv r mv then redo_move state
-    else begin
-      Stack.clear state.redos;
-      pipeline is_mv mv state
-    end
+    else state |> clear_redo |> pipeline is_mv mv
 
 (*=========TURN INTERFACE & IMMEDIATE HFs=========*)
 
@@ -367,12 +369,9 @@ let update (coord : int * int) (state : t) : turn =
   else Illegal state
 
 (** [check_do f stack state]*)
-let check_do
-    (f : t -> t)
-    (undo : bool)
-    (stack : move Stack.t)
-    (state : t) : turn =
-  if Stack.length stack < 1 then
+let check_do (f : t -> t) (undo : bool) (stack : move list) (state : t)
+    : turn =
+  if List.length stack < 1 then
     if undo then NoUndo state else NoRedo state
   else Legal (f state)
 
