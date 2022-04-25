@@ -56,9 +56,10 @@ let highlight (e : Graphics.status) (game : t) : _ =
   game.state |> State.get_board |> Canvas.highlight e
 
 (*=========GAME LOOP=========*)
-let glref = ref (fun a b -> ())
+(* [glref event game] stores [game_loop] as a *)
+let gl_ref = ref (fun a b -> ())
 
-(* [event_handler ]*)
+(* [event_handler glref game]*)
 let rec event_handler glref (game : t) : _ =
   let event = Graphics.wait_next_event [ Button_down; Key_pressed ] in
   let gle = !glref event in
@@ -74,27 +75,26 @@ let rec event_handler glref (game : t) : _ =
   else game |> gle;
   ()
 
+(* [game_loop e game]*)
 let rec game_loop (e : Graphics.status) (game : t) : _ =
   (* if State.game_over game.state then let game = (change_sc game); *)
   draw_st game;
   draw_turn game;
   if e.button then highlight e game else ();
-  event_handler glref game;
+  event_handler gl_ref game;
   ()
 
-(** [main] starts the game an initiliazes a reference to the game loop
-    to reduce redundant code.*)
-let main () =
-  let game = init_game in
+(* [start_game game]*)
+let start_game game =
   draw_st game;
-  glref := game_loop;
-  event_handler glref game;
+  gl_ref := game_loop;
+  event_handler gl_ref game;
   ()
 
-(* Execute the game engine. *)
-let () = main ()
+(* [default_game]*)
+let default_game = init_game |> start_game
 
-(* Howard End *)
+(*=========LOADERS=========*)
 
 (* Functions added by Anirudh *)
 
@@ -127,3 +127,47 @@ let from_json json : t =
   }
 
 (* END functions added by Anirudh. *)
+
+let data_dir_prefix = "data" ^ Filename.dir_sep
+
+(* [gf_ref] stores [game_loop] as a *)
+(* let gf_ref = ref (fun a -> ()) *)
+
+let rec get_file loader =
+  match read_line () with
+  | exception End_of_file -> ()
+  | "default" -> default_game
+  | file_name -> loader (data_dir_prefix ^ file_name ^ ".json")
+
+(* [load_game f]*)
+let rec load_game f =
+  try f |> Yojson.Basic.from_file |> from_json |> start_game
+  with _ -> (
+    ANSITerminal.print_string [ ANSITerminal.red ]
+      "Invalid file name, please try again.\n";
+    print_endline
+      "Please enter the name of the game file you want to load.\n";
+    Stdlib.print_string "> ";
+    match read_line () with
+    | exception End_of_file -> ()
+    | "default" -> default_game
+    | file_name -> load_game (data_dir_prefix ^ file_name ^ ".json"))
+
+(** [main] starts a game based on .*)
+let main () =
+  ANSITerminal.print_string [ ANSITerminal.red ]
+    "\n\nOCaml Checkers Initialized\n";
+  print_endline
+    "Please enter the name of the save file you want to load.\n";
+  print_endline
+    "Or enter \"default\" to start a standard checkers game.";
+  print_string "> ";
+  match read_line () with
+  | exception End_of_file -> ()
+  | "default" -> default_game
+  | file_name -> load_game (data_dir_prefix ^ file_name ^ ".json")
+
+(* Execute the game engine. *)
+let () = main ()
+
+(* Howard End *)
