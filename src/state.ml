@@ -254,8 +254,8 @@ let switch_tn (state : t) : t =
   if state.player_turn = 1 then set_tn 2 state else set_tn 1 state
 
 (** [check_mc reverse mv state] checks whether the piece that has moved
-    to [coord] can capture again (before premotion) and stores the
-    information in new [state]. *)
+    according to [mv] can capture again (before premotion) and stores
+    the information in new [state]. *)
 let check_mc (reverse : bool) (mv : move) (state : t) : t =
   let pc = mv.pc in
   let caps = poss_captures state.board pc in

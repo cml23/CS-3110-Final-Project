@@ -10,7 +10,7 @@ open Game.Canvas
    Board and State modules, and the graphical nature of the Canvas
    module - our team has opted for black box and play testing.*)
 (* The Board, State, and Canvas modules were all subject to both black
-   box and playtesting.*)
+   box and playtesting. *)
 
 (* Add helper functions for testing Board here.*)
 
@@ -451,9 +451,34 @@ let mc_tests =
 let u1_state = mc_state2 |> urdo true |> get_state
 let u2_state = u1_state |> urdo true |> get_state
 let u3_state = u2_state |> urdo true |> get_state
+let r1_state = u2_state |> urdo false |> get_state
 
-(* let r1_state = u2_state |> urdo false |> get_state *)
-let urdo_tests = []
+let urdo_tests =
+  [
+    int_test get_player "P2 Undo MC State: player number" u1_state 2;
+    unselected_test "P2 MC State: unselected" mc_state true;
+    selected_test "P2 MC State: selected" mc_state (-1, -1);
+    getter_test "P2 MC State: moves" mc_state get_moves [];
+    getter_test "P2 MC State: captures" mc_state get_caps [ (4, 2) ];
+    urdo_len_test "P2 MC State: 2 undo possible" mc_state
+      Game.State.get_undos 6;
+    int_test get_player "P2 Undo MC State: player number" u1_state 2;
+    unselected_test "P2 MC State: unselected" mc_state true;
+    selected_test "P2 MC State: selected" mc_state (-1, -1);
+    getter_test "P2 MC State: moves" mc_state get_moves [];
+    getter_test "P2 MC State: captures" mc_state get_caps [ (4, 2) ];
+    urdo_len_test "P2 MC State: 2 undo possible" mc_state
+      Game.State.get_undos 6;
+    int_test get_player "P2 Undo MC State: player number" u1_state 2;
+    unselected_test "P2 MC State: unselected" mc_state true;
+    selected_test "P2 MC State: selected" mc_state (-1, -1);
+    getter_test "P2 MC State: moves" mc_state get_moves [];
+    getter_test "P2 MC State: captures" mc_state get_caps [ (4, 2) ];
+    urdo_len_test "P2 MC State: 2 undo possible" mc_state
+      Game.State.get_undos 6;
+  ]
+
+(*=========VICTOR TESTS=========*)
 
 (* Add helper functions for testing Canvas here.*)
 let canvas_tests = [ (*More like Canvas tests me amirite?*) ]
