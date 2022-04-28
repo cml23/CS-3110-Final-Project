@@ -14,14 +14,29 @@ type preset = {
   mutable royal : Graphics.image option;
   mutable soldier2 : Graphics.image option;
   mutable royal2 : Graphics.image option;
+  mutable highlight : Graphics.image option;
   tiles : Graphics.image option array;
 }
+
+let preset_skeleton =
+  {
+    image_paths = Array.make 7 (Png.load_as_rgb24 "data/tile1.png" []);
+    tile1 = None;
+    tile2 = None;
+    soldier = None;
+    royal = None;
+    soldier2 = None;
+    royal2 = None;
+    highlight = None;
+    tiles = Array.make 3 None;
+  }
 
 (**[default] is the default preset, with a black and white board. Preset
    images values are initially set to [None] since the graph has not yet
    been opened.*)
 let default =
   {
+    preset_skeleton with
     image_paths =
       [|
         Images.sub
@@ -34,20 +49,18 @@ let default =
         Png.load_as_rgb24 "data/royal_resize.png" [];
         Png.load_as_rgb24 "data/soldier2_resize.png" [];
         Png.load_as_rgb24 "data/royal2_resize.png" [];
+        Images.sub
+          (Png.load_as_rgb24 "data/highlight.png" [])
+          0 0 Constants.tile_size Constants.tile_size;
       |];
-    tile1 = None;
-    tile2 = None;
-    soldier = None;
-    royal = None;
-    soldier2 = None;
-    royal2 = None;
-    tiles = [| None; None |];
+    tiles = [| None; None; None |];
   }
 
 (**[yellow_purple] is a preset with a yellow and purple board and
    pieces.*)
 let yellow_purple =
   {
+    preset_skeleton with
     image_paths =
       [|
         Images.sub
@@ -57,22 +70,20 @@ let yellow_purple =
           (Png.load_as_rgb24 "data/tile4.png" [])
           0 0 Constants.tile_size Constants.tile_size;
         Png.load_as_rgb24 "data/soldier3_resize.png" [];
-        Png.load_as_rgb24 "data/royal_resize.png" [];
-        Png.load_as_rgb24 "data/soldier_resize.png" [];
-        Png.load_as_rgb24 "data/royal2_resize.png" [];
+        Png.load_as_rgb24 "data/royal3_resize.png" [];
+        Png.load_as_rgb24 "data/soldier4_resize.png" [];
+        Png.load_as_rgb24 "data/royal4_resize.png" [];
+        Images.sub
+          (Png.load_as_rgb24 "data/highlight.png" [])
+          0 0 Constants.tile_size Constants.tile_size;
       |];
-    tile1 = None;
-    tile2 = None;
-    soldier = None;
-    royal = None;
-    soldier2 = None;
-    royal2 = None;
-    tiles = [| None; None |];
+    tiles = [| None; None; None |];
   }
 
 (**[orange_blue] is a preset with a yellow and purple board and pieces.*)
 let orange_blue =
   {
+    preset_skeleton with
     image_paths =
       [|
         Images.sub
@@ -85,14 +96,34 @@ let orange_blue =
         Png.load_as_rgb24 "data/royal5_resize.png" [];
         Png.load_as_rgb24 "data/soldier6_resize.png" [];
         Png.load_as_rgb24 "data/royal6_resize.png" [];
+        Images.sub
+          (Png.load_as_rgb24 "data/highlight.png" [])
+          0 0 Constants.tile_size Constants.tile_size;
       |];
-    tile1 = None;
-    tile2 = None;
-    soldier = None;
-    royal = None;
-    soldier2 = None;
-    royal2 = None;
-    tiles = [| None; None |];
+    tiles = [| None; None; None |];
+  }
+
+(**[black_red] is a preset with a black and red board and pieces.*)
+let black_red =
+  {
+    preset_skeleton with
+    image_paths =
+      [|
+        Images.sub
+          (Png.load_as_rgb24 "data/tile8.png" [])
+          0 0 Constants.tile_size Constants.tile_size;
+        Images.sub
+          (Png.load_as_rgb24 "data/tile7.png" [])
+          0 0 Constants.tile_size Constants.tile_size;
+        Png.load_as_rgb24 "data/soldier7_resize.png" [];
+        Png.load_as_rgb24 "data/royal7_resize.png" [];
+        Png.load_as_rgb24 "data/soldier8_resize.png" [];
+        Png.load_as_rgb24 "data/royal8_resize.png" [];
+        Images.sub
+          (Png.load_as_rgb24 "data/highlight.png" [])
+          0 0 Constants.tile_size Constants.tile_size;
+      |];
+    tiles = [| None; None; None |];
   }
 
 (**[make_transparent pc] converts the background of a piece image [pc]
@@ -123,11 +154,14 @@ let load_images p =
     Some (Graphic_image.of_image p.image_paths.(4)) |> make_transparent;
   p.royal2 <-
     Some (Graphic_image.of_image p.image_paths.(5)) |> make_transparent;
+  p.highlight <- Some (Graphic_image.of_image p.image_paths.(6));
   p.tiles.(0) <- p.tile1;
-  p.tiles.(1) <- p.tile2
+  p.tiles.(1) <- p.tile2;
+  p.tiles.(2) <- p.highlight
 
 (**[active_presets] are the presets that the player can choose from.*)
-let active_presets = [| default; yellow_purple; orange_blue |]
+let active_presets =
+  [| default; yellow_purple; orange_blue; black_red |]
 
 let turn1_img : Graphics.image option ref = ref None
 let turn2_img : Graphics.image option ref = ref None
@@ -136,6 +170,11 @@ let swap_preset idx =
   if idx + 1 > Array.length active_presets - 1 then 0 else idx + 1
 
 let swap_index (tile_index : int) = if tile_index = 0 then 1 else 0
+
+(**[current_preset] represents the preset from [active_presets] that is
+   currently displayed to the board. It is by default 0, i.e. the
+   [default] preset.*)
+let current_preset = ref 0
 
 (**[draw_piece_img img x y] draws the specified image to the appropriate
    part of the canvas.*)
@@ -188,7 +227,7 @@ let rec draw_tile
     (p : preset)
     (tile_index : int) : unit =
   match p.tiles.(tile_index) with
-  | None -> ()
+  | None -> print_endline "NOne"
   | Some v -> (
       Graphics.draw_image v x y;
       match Board.piece_of_xy b row col with
@@ -273,8 +312,8 @@ let highlight (ev : Graphics.status) (b : Board.t) =
   | None -> ()
   | Some (tile_x, tile_y, draw_x, draw_y) ->
       draw_tile draw_x draw_y tile_x tile_y b Constants.tile_size
-        default 0
-(*need green tile*)
+        active_presets.(!current_preset)
+        2
 
 (**[load_turn_img img1 img2] loads [img1] as the player 1 turn text, and
    [img2] as the player 2 turn text.*)
@@ -289,6 +328,11 @@ let draw_turn_img (player : int) x y =
   if player = 1 then turn_img := "Player 1" else turn_img := "Player 2";
   Graphics.draw_string !turn_img
 
+let draw_score p1_score p2_score x y =
+  Graphics.moveto x y;
+  Graphics.draw_string
+    (string_of_int p1_score ^ " : " ^ string_of_int p2_score)
+
 let init =
   Graphics.open_graph "";
   (*Images must be loaded after opening graph to avoid errors.*)
@@ -298,9 +342,20 @@ let init =
   done
 
 let draw i st =
+  current_preset := i;
   let b = State.get_board st in
   draw_turn_img (State.get_player st)
     (Constants.start_x + (Board.dim_x b * (Constants.tile_size + 1)))
     Constants.start_y;
   draw_board Constants.start_x Constants.start_y 1 1 b (Board.dim_y b)
-    Constants.tile_size active_presets.(i) 0
+    Constants.tile_size
+    active_presets.(!current_preset)
+    0
+
+let draw_new_game i p1_score p2_score st =
+  let b = State.get_board st in
+  Graphics.clear_graph ();
+  draw_score 0 0
+    (Graphics.size_x () / 2)
+    (Constants.start_y + (Board.dim_y b * (Constants.tile_size + 1)));
+  draw i st

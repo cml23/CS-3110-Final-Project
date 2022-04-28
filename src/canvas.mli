@@ -17,6 +17,11 @@ val draw : int -> State.t -> unit
 (**[draw idx st] draws all elements associated with the preset numbered
    [idx] to the game canvas.*)
 
+val draw_new_game : int -> int -> int -> State.t -> unit
+(**[draw preset p1_score p2_score st] draws a new game, with an updated
+   score for player 1 and player 2, if the players have played multiple
+   games.*)
+
 val mouse_input : Graphics.status -> Board.t -> (int * int) option
 (**[mouse_input ev] is the [(x,y)] coordinate of the tile clicked by the
    user, or None if there is no tile at the position clicked. *)
