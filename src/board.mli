@@ -8,11 +8,6 @@ type piece = {
 type t
 (** The abstract type of values representing boards. *)
 
-val init_board : t
-(** [init_board] is the abstract representation of the default 8x8 board
-    at the start of the game. Player 1's pieces are contained in rows
-    where y=1,2,3 and player 2's pieces are in rows where y=6,7,8. *)
-
 val get_x : t -> int -> int
 (** [get_x b i] is the x coordinate on board [b] corresponding to the
     general index [i], which is 1 at the bottom left and maximum at the
