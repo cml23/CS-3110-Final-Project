@@ -1,5 +1,3 @@
-open Graphics
-
 (**Representation of the game canvas.
 
    This module draws the board and pieces to the display, utilizing

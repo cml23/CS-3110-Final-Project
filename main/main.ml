@@ -126,7 +126,8 @@ let start_game game =
   ()
 
 (* [default_game]*)
-let default_game = init_game |> start_game
+let file_format = ".json"
+let default_game = "default_layout"
 let data_dir_prefix = "data" ^ Filename.dir_sep
 
 (* [gf_ref] stores [game_loop] as a *)
@@ -135,22 +136,19 @@ let data_dir_prefix = "data" ^ Filename.dir_sep
 let rec get_file loader =
   match read_line () with
   | exception End_of_file -> ()
-  | "default" -> default_game
-  | file_name -> loader (data_dir_prefix ^ file_name ^ ".json")
+  | "default" -> loader (data_dir_prefix ^ default_game ^ file_format)
+  | file_name -> loader (data_dir_prefix ^ file_name ^ file_format)
 
 (* [load_game f]*)
 let rec load_game f =
   try f |> Yojson.Basic.from_file |> from_json |> start_game
-  with _ -> (
+  with _ ->
     ANSITerminal.print_string [ ANSITerminal.red ]
       "Invalid file name, please try again.\n";
     print_endline
       "Please enter the name of the game file you want to load.\n";
     Stdlib.print_string "> ";
-    match read_line () with
-    | exception End_of_file -> ()
-    | "default" -> default_game
-    | file_name -> load_game (data_dir_prefix ^ file_name ^ ".json"))
+    get_file load_game
 
 (** [main] starts a game based on .*)
 let main () =
@@ -161,10 +159,7 @@ let main () =
   print_endline
     "Or enter \"default\" to start a standard checkers game.";
   print_string "> ";
-  match read_line () with
-  | exception End_of_file -> ()
-  | "default" -> default_game
-  | file_name -> load_game (data_dir_prefix ^ file_name ^ ".json")
+  get_file load_game
 
 (* Execute the game engine. *)
 let () = main ()

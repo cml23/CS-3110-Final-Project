@@ -128,11 +128,8 @@ let is_promotable_test
   name >:: fun _ ->
   assert_equal exp_out (is_promotable b pc) ~printer:string_of_bool
 
-let json_test (name : string) (json : Yojson.t) =
-  name >:: fun _ ->
-  assert_equal json
-    (let open Main.Main in
-    to_json (from_json json))
+(* let json_test (name : string) (json : Yojson.t) = name >:: fun _ ->
+   assert_equal json (let open Main.Main in to_json (from_json json)) *)
 (* TODO: Fix this function. Cannot access functions from Main. *)
 
 let board_tests =
