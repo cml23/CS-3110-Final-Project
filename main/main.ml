@@ -10,12 +10,46 @@ type t = {
   preset : int;
 }
 
-let init_st = State.def_state
+(* [default_game]*)
+let file_format = ".json"
+let default_game = "default_layout"
+let data_dir_prefix = "data" ^ Filename.dir_sep
 
-let init_game =
-  Game.Canvas.init;
-  let s = init_st in
-  { p1_sc = 0; p2_sc = 0; state = s; turn = Legal s; preset = 0 }
+(*=========LOADERS=========*)
+
+(* Functions added by Anirudh *)
+
+(* The json representation of the game stores the current board, the
+   current player turn, and the multi-game score tally. *)
+
+let to_json (g : t) : Yojson.Basic.t =
+  `Assoc
+    [
+      ("board", Board.to_json (State.get_board g.state));
+      ("turn", `Int (State.get_player g.state));
+      ("player 1 score", `Int g.p1_sc);
+      ("player 2 score", `Int g.p2_sc);
+      ("preset", `Int g.preset);
+    ]
+
+let from_json_state json =
+  let open Yojson.Basic.Util in
+  State.init_state
+    (json |> member "turn" |> to_int)
+    (Board.from_json (json |> member "board"))
+
+let from_json json : t =
+  let open Yojson.Basic.Util in
+  let st = from_json_state json in
+  {
+    p1_sc = json |> member "player 1 score" |> to_int;
+    p2_sc = json |> member "player 2 score" |> to_int;
+    preset = json |> member "preset" |> to_int;
+    state = st;
+    turn = Continue st;
+  }
+
+(* END functions added by Anirudh. *)
 
 (*=========GAME MANIPULATION FUNCTIONS=========*)
 
@@ -37,7 +71,14 @@ let change_sc (game : t) : t =
     p2_sc = game.p2_sc + State.get_pts 2 game.state;
   }
 
-let restart_gm (game : t) : t = { game with turn = Legal init_st }
+let restart_gm (game : t) : t =
+  {
+    game with
+    turn =
+      Legal
+        (data_dir_prefix ^ default_game ^ file_format
+        |> Yojson.Basic.from_file |> from_json_state);
+  }
 
 let change_preset (game : t) : t =
   { game with preset = Game.Canvas.swap_preset game.preset }
@@ -53,40 +94,6 @@ let draw_turn (game : t) : _ = State.match_turn dc dl di du dr game.turn
 
 let highlight (e : Graphics.status) (game : t) : _ =
   game.state |> State.get_board |> Canvas.highlight e
-
-(*=========LOADERS=========*)
-
-(* Functions added by Anirudh *)
-
-(* The json representation of the game stores the current board, the
-   current player turn, and the multi-game score tally. *)
-
-let to_json (g : t) : Yojson.Basic.t =
-  `Assoc
-    [
-      ("board", Board.to_json (State.get_board g.state));
-      ("turn", `Int (State.get_player g.state));
-      ("player 1 score", `Int g.p1_sc);
-      ("player 2 score", `Int g.p2_sc);
-      ("preset", `Int g.preset);
-    ]
-
-let from_json json : t =
-  let open Yojson.Basic.Util in
-  let st =
-    State.init_state
-      (json |> member "turn" |> to_int)
-      (Board.from_json (json |> member "board"))
-  in
-  {
-    p1_sc = json |> member "player 1 score" |> to_int;
-    p2_sc = json |> member "player 2 score" |> to_int;
-    preset = json |> member "preset" |> to_int;
-    state = st;
-    turn = Continue st;
-  }
-
-(* END functions added by Anirudh. *)
 
 (*=========GAME LOOP=========*)
 (* [glref event game] stores [game_loop] as a *)
@@ -124,11 +131,6 @@ let start_game game =
   gl_ref := game_loop;
   event_handler gl_ref game;
   ()
-
-(* [default_game]*)
-let file_format = ".json"
-let default_game = "default_layout"
-let data_dir_prefix = "data" ^ Filename.dir_sep
 
 (* [gf_ref] stores [game_loop] as a *)
 (* let gf_ref = ref (fun a -> ()) *)

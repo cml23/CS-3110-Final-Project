@@ -24,7 +24,7 @@ val init_state : int -> Board.t -> t
 (** [init_state init bd] creates an initial game state based on
     [Board.t]. *)
 
-val def_state : t
+(* val def_state : t *)
 (** [def_state] creates the default checkers board. *)
 
 val get_board : t -> Board.t

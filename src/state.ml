@@ -53,8 +53,6 @@ let init_state (pl : int) (bd : Board.t) =
     undos = [];
   }
 
-let def_state : t = init_state 1 Board.init_board
-
 (*=========GETTER FUNCTIONS=========*)
 
 let get_board (state : t) : Board.t = state.board
