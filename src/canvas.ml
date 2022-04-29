@@ -31,100 +31,47 @@ let preset_skeleton =
     tiles = Array.make 3 None;
   }
 
+(**[load_image path] loads the image stored at [path].*)
+let load_image path = Png.load_as_rgb24 path []
+
+(**[construct_preset file1 file2] creates a preset using the soldier,
+   tile, and royal files labeled with the ints [file1] and [file2].*)
+let construct_preset (file1 : int) (file2 : int) =
+  {
+    preset_skeleton with
+    image_paths =
+      [|
+        Images.sub
+          (load_image ("data/tile" ^ string_of_int file1 ^ ".png"))
+          0 0 Constants.tile_size Constants.tile_size;
+        Images.sub
+          (load_image ("data/tile" ^ string_of_int file2 ^ ".png"))
+          0 0 Constants.tile_size Constants.tile_size;
+        load_image ("data/soldier" ^ string_of_int file1 ^ "_resize.png");
+        load_image ("data/royal" ^ string_of_int file1 ^ "_resize.png");
+        load_image ("data/soldier" ^ string_of_int file2 ^ "_resize.png");
+        load_image ("data/royal" ^ string_of_int file2 ^ "_resize.png");
+        Images.sub
+          (load_image "data/highlight.png")
+          0 0 Constants.tile_size Constants.tile_size;
+      |];
+    tiles = [| None; None; None |];
+  }
+
 (**[default] is the default preset, with a black and white board. Preset
    images values are initially set to [None] since the graph has not yet
    been opened.*)
-let default =
-  {
-    preset_skeleton with
-    image_paths =
-      [|
-        Images.sub
-          (Png.load_as_rgb24 "data/tile1.png" [])
-          0 0 Constants.tile_size Constants.tile_size;
-        Images.sub
-          (Png.load_as_rgb24 "data/tile2.png" [])
-          0 0 Constants.tile_size Constants.tile_size;
-        Png.load_as_rgb24 "data/soldier_resize.png" [];
-        Png.load_as_rgb24 "data/royal_resize.png" [];
-        Png.load_as_rgb24 "data/soldier2_resize.png" [];
-        Png.load_as_rgb24 "data/royal2_resize.png" [];
-        Images.sub
-          (Png.load_as_rgb24 "data/highlight.png" [])
-          0 0 Constants.tile_size Constants.tile_size;
-      |];
-    tiles = [| None; None; None |];
-  }
+let default = construct_preset 1 2
 
 (**[yellow_purple] is a preset with a yellow and purple board and
    pieces.*)
-let yellow_purple =
-  {
-    preset_skeleton with
-    image_paths =
-      [|
-        Images.sub
-          (Png.load_as_rgb24 "data/tile3.png" [])
-          0 0 Constants.tile_size Constants.tile_size;
-        Images.sub
-          (Png.load_as_rgb24 "data/tile4.png" [])
-          0 0 Constants.tile_size Constants.tile_size;
-        Png.load_as_rgb24 "data/soldier3_resize.png" [];
-        Png.load_as_rgb24 "data/royal3_resize.png" [];
-        Png.load_as_rgb24 "data/soldier4_resize.png" [];
-        Png.load_as_rgb24 "data/royal4_resize.png" [];
-        Images.sub
-          (Png.load_as_rgb24 "data/highlight.png" [])
-          0 0 Constants.tile_size Constants.tile_size;
-      |];
-    tiles = [| None; None; None |];
-  }
+let yellow_purple = construct_preset 3 4
 
 (**[orange_blue] is a preset with a yellow and purple board and pieces.*)
-let orange_blue =
-  {
-    preset_skeleton with
-    image_paths =
-      [|
-        Images.sub
-          (Png.load_as_rgb24 "data/tile5.png" [])
-          0 0 Constants.tile_size Constants.tile_size;
-        Images.sub
-          (Png.load_as_rgb24 "data/tile6.png" [])
-          0 0 Constants.tile_size Constants.tile_size;
-        Png.load_as_rgb24 "data/soldier5_resize.png" [];
-        Png.load_as_rgb24 "data/royal5_resize.png" [];
-        Png.load_as_rgb24 "data/soldier6_resize.png" [];
-        Png.load_as_rgb24 "data/royal6_resize.png" [];
-        Images.sub
-          (Png.load_as_rgb24 "data/highlight.png" [])
-          0 0 Constants.tile_size Constants.tile_size;
-      |];
-    tiles = [| None; None; None |];
-  }
+let orange_blue = construct_preset 5 6
 
 (**[black_red] is a preset with a black and red board and pieces.*)
-let black_red =
-  {
-    preset_skeleton with
-    image_paths =
-      [|
-        Images.sub
-          (Png.load_as_rgb24 "data/tile8.png" [])
-          0 0 Constants.tile_size Constants.tile_size;
-        Images.sub
-          (Png.load_as_rgb24 "data/tile7.png" [])
-          0 0 Constants.tile_size Constants.tile_size;
-        Png.load_as_rgb24 "data/soldier7_resize.png" [];
-        Png.load_as_rgb24 "data/royal7_resize.png" [];
-        Png.load_as_rgb24 "data/soldier8_resize.png" [];
-        Png.load_as_rgb24 "data/royal8_resize.png" [];
-        Images.sub
-          (Png.load_as_rgb24 "data/highlight.png" [])
-          0 0 Constants.tile_size Constants.tile_size;
-      |];
-    tiles = [| None; None; None |];
-  }
+let black_red = construct_preset 8 7
 
 (**[make_transparent pc] converts the background of a piece image [pc]
    from black to transparent.*)
