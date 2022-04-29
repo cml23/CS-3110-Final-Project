@@ -7,10 +7,11 @@ type piece = {
 }
 
 type tile = piece option
+
 type t = tile array * int
-(* a board can have any rectangular shape. The number of tiles per row
-   (i.e., the number of columns) is given by the second number in the
-   tuple representation. *)
+(** A board can have any rectangular shape. The number of tiles per row
+    (i.e., the number of columns) is given by the second number in the
+    tuple representation. *)
 
 let std_pc p i = Some { player = p; id = i; is_royal = false }
 
@@ -139,6 +140,9 @@ let pc_exists b x y =
   | None -> false
   | Some _ -> true
 
+(** [get_neighbors b pc x y f_n] is the list of neighbors (locations
+    that piece [pc] at location x,y could move to on board [b]) in the
+    direction given by [f_n]. *)
 let get_neighbor
     (b : t)
     (pc : piece)
@@ -151,9 +155,6 @@ let get_neighbor
       match piece_of_xy b x_new y_new with
       | None -> [ (x_new, y_new) ]
       | Some _ -> [])
-(* [get_neighbors b pc x y f_n] is the list of neighbors (locations that
-   piece [pc] at location x,y could move to on board [b]) in the
-   direction given by [f_n]. *)
 
 let poss_moves (b : t) (pc : piece) : (int * int) list =
   match xy_of_pc b pc with
@@ -169,6 +170,31 @@ let poss_moves (b : t) (pc : piece) : (int * int) list =
       else if pc.player = 1 then up_moves
       else down_moves
 
+(** [capture_help b pc f_n x1 y1] produces the output for [capture] in
+    the case that the piece does have a neighboring tile in the desired
+    direction, located at (x1,y1). *)
+let capture_help
+    (b : t)
+    (pc : piece)
+    (f_n : t -> int -> int -> (int * int) option)
+    (x1 : int)
+    (y1 : int) : (int * int) list * piece list =
+  match piece_of_xy b x1 y1 with
+  | None -> ([], [])
+  | Some pc_opp when pc_opp.player <> pc.player -> (
+      match f_n b x1 y1 with
+      | None -> ([], [])
+      | Some (x2, y2) when piece_of_xy b x2 y2 = None ->
+          ([ (x2, y2) ], [ pc_opp ])
+      | Some _ -> ([], []))
+  | Some _ -> ([], [])
+
+(** [capture b pc f_n] is a pair of empty lists if there is no valid
+    capture for piece [pc] on board [b] in the direction specified by
+    [f_n]; otherwise it is a pair of singleton lists where the first
+    list contains the new x,y position that [pc] would move to by making
+    a capture in the direction of [f_n] and the second list is the
+    captured piece. *)
 let capture
     (b : t)
     (pc : piece)
@@ -179,22 +205,7 @@ let capture
   | Some (x, y) -> (
       match f_n b x y with
       | None -> ([], [])
-      | Some (x1, y1) -> (
-          match piece_of_xy b x1 y1 with
-          | None -> ([], [])
-          | Some pc_opp when pc_opp.player <> pc.player -> (
-              match f_n b x1 y1 with
-              | None -> ([], [])
-              | Some (x2, y2) when piece_of_xy b x2 y2 = None ->
-                  ([ (x2, y2) ], [ pc_opp ])
-              | Some _ -> ([], []))
-          | Some _ -> ([], [])))
-(* [capture b pc f_n] is a pair of empty lists if there is no valid
-   capture for piece [pc] on board [b] in the direction specified by
-   [f_n]; otherwise it is a pair of singleton lists where the first list
-   contains the new x,y position that [pc] would move to by making a
-   capture in the direction of [f_n] and the second list is the captured
-   piece. *)
+      | Some (x1, y1) -> capture_help b pc f_n x1 y1)
 
 let poss_captures (b : t) (pc : piece) : (int * int) list * piece list =
   let up_r_captures = capture b pc up_r in
