@@ -127,7 +127,7 @@ let rec game_loop (e : Graphics.status) (game : t) : _ =
 
 (* [start_game game]*)
 let start_game game =
-  draw_st game;
+  Canvas.draw_new_game game.preset game.p1_sc game.p2_sc game.state;
   gl_ref := game_loop;
   event_handler gl_ref game;
   ()

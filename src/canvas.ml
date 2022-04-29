@@ -157,10 +157,6 @@ let draw_piece
     draw_img p.soldier2
       (x + (Constants.pc_size / 2))
       (y + (Constants.pc_size / 2))
-(*fill_ellipse (x + (tile_size / 2)) (y + (tile_size / 2))
-  Constants.pc_size Constants.pc_size;*)
-(* match Board.xy_of_pc b pc with | Some (x, y) -> fill_ellipse x y 40
-   40 | None -> ()*)
 
 (**[draw_tile x y row col b tile_size color] draws the tile [(row,col)]
    of [color] and size [tile_size] at position [(x,y)]*)
