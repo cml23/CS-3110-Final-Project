@@ -104,7 +104,7 @@ let rec event_handler glref (game : t) : _ =
   let event = Graphics.wait_next_event [ Button_down; Key_pressed ] in
   let gle = !glref event in
   if event.button then
-    match Canvas.mouse_input event Game.Board.init_board with
+    match Canvas.mouse_input event (game.state |> State.get_board) with
     | Some coord -> game |> process_mv coord |> gle
     | None -> game |> gle
   else if event.key = 'z' then game |> urdo_mv true |> gle
