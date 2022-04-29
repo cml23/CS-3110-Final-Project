@@ -9,8 +9,8 @@ open Game.Canvas
    given board or state, the difficulty of white box testing in the
    Board and State modules, and the graphical nature of the Canvas
    module - our team has opted for black box and play testing.*)
-(* The Board, State, and Canvas modules were all subject to both black
-   box and playtesting. *)
+(* The Board and State modules were subject to both black box and
+   playtesting. Canvas was playtested. *)
 
 (* Add helper functions for testing Board here.*)
 
