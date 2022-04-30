@@ -209,7 +209,7 @@ let to_json (b : t) : Yojson.Basic.t =
     [
       ("tiles", `List (json_of_tiles (fst b)));
       ("columns", `Int (snd b));
-      ("row", `Int (Array.length (fst b) / snd b));
+      ("rows", `Int (Array.length (fst b) / snd b));
     ]
 
 (* TODO: Encapsulate 4 neighbor functions, get_x, get_y, get_idx. *)
