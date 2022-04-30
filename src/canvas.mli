@@ -8,6 +8,13 @@ val swap_preset : int -> int
 (**[swap_preset idx] increments the preset index by 1, if such a preset
    exists, or wraps around to 0 if this is not possible.*)
 
+val player_names : string list
+(**[player_names] are the possible names that the players can choose
+   from.*)
+
+val p1_name : string ref
+val p2_name : string ref
+
 val init : unit
 (**[init] initializes the Canvas and loads the images for all presets.*)
 

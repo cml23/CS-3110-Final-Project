@@ -258,6 +258,12 @@ let highlight (ev : Graphics.status) (b : Board.t) =
         active_presets.(!current_preset)
         2
 
+let player_names =
+  [ "Player 1"; "Player 2"; "Howard"; "Cassidy"; "Anirudh" ]
+
+let p1_name = ref "Player 1"
+let p2_name = ref "Player 2"
+
 (**[load_turn_img img1 img2] loads [img1] as the player 1 turn text, and
    [img2] as the player 2 turn text.*)
 let load_turn_img img1 img2 =
@@ -268,8 +274,8 @@ let turn_img = ref "Player 1"
 
 let draw_turn_img (player : int) x y =
   Graphics.moveto x y;
-  if player = 1 then turn_img := "Player 1" else turn_img := "Player 2";
-  Graphics.draw_string !turn_img
+  if player = 1 then Graphics.draw_string !p1_name
+  else Graphics.draw_string !p2_name
 
 let draw_score p1_score p2_score x y =
   Graphics.moveto x y;

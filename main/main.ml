@@ -152,10 +152,31 @@ let rec load_game f =
     Stdlib.print_string "> ";
     get_file load_game
 
+let rec get_name loader =
+  match read_line () with
+  | exception End_of_file ->
+      "That is not a valid name. Please try again. \n"
+  | s -> begin
+      match List.filter (fun y -> y = s) Canvas.player_names with
+      | [] ->
+          print_endline "That is not a valid name. Please try again.\n";
+          get_name ()
+      | h :: t -> h
+    end
+
+let get_player_name player name =
+  print_endline
+    ("Please choose Player " ^ string_of_int player ^ " name.");
+  print_string "> ";
+  name := get_name ();
+  print_endline ""
+
 (** [main] starts a game based on .*)
 let main () =
   ANSITerminal.print_string [ ANSITerminal.red ]
     "\n\nOCaml Checkers Initialized\n";
+  get_player_name 1 Canvas.p1_name;
+  get_player_name 2 Canvas.p2_name;
   print_endline
     "Please enter the name of the save file you want to load.\n";
   print_endline
