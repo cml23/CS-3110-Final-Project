@@ -52,10 +52,10 @@ val get_caps : t -> (int * int) list
     to while capturing. *)
 
 val unselected : t -> bool
-(** [num_selected t] returns whether a tile has been selected. *)
+(** [unselected t] returns whether a tile has been selected. *)
 
 val selected : t -> int * int
-(** [num_selected t] returns whether a tile has been selected. *)
+(** [selected t] returns the tile that has been selected. *)
 
 val get_if_mc : t -> bool
 (** [get_if_mc t] returns whether the state is in multicapture mode or
@@ -68,6 +68,8 @@ val get_undos : t -> move list
 val get_redos : t -> move list
 (** [get_redos state] returns the possible redos for the current state.
     For testing purposes. *)
+
+val get_xy_of_pc : piece -> Board.t -> int * int
 
 (** [turn] represents the type of state returned. Continue represents
     that the current player stays the same and requires new input. Legal

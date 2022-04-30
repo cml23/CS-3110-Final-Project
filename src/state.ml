@@ -303,9 +303,9 @@ let rem_mc (state : t) : t = { state with mc_pres = false }
     possible. [coord] is valid move or capture location of selected
     piece. *)
 let pipeline (is_mv : bool) (mv : move) (state : t) : t =
-  state |> add_mv mv true |> mv_st false mv
+  state |> add_mv mv true
   |> (if is_mv then Fun.id else cap_st mv)
-  |> reset_st |> switch_tn
+  |> mv_st false mv |> reset_st |> switch_tn
   |> (if is_mv then Fun.id else check_mc false mv)
   |> pro_pc mv
   |> if is_mv then Fun.id else check_vc

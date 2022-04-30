@@ -1,5 +1,5 @@
 open OUnit2
-open Game.Command
+open Game.Ai
 open Game.State
 open Game.Board
 open Game.Canvas
