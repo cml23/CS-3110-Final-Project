@@ -49,6 +49,11 @@ let from_json json : t =
     turn = Continue st;
   }
 
+let save_game (g : t) (name : string) : unit =
+  Yojson.Basic.to_file
+    (data_dir_prefix ^ name ^ file_format)
+    (to_json g)
+
 (* END functions added by Anirudh. *)
 
 (*=========GAME MANIPULATION FUNCTIONS=========*)
@@ -111,7 +116,9 @@ let rec event_handler glref (game : t) : _ =
   else if event.key = 'x' then game |> urdo_mv false |> gle
   else if event.key = 'r' then game |> restart_gm |> gle
   else if event.key = 'c' then game |> change_preset |> gle
-  else if event.key = 's' then game |> to_json |> ignore
+  else if event.key = 's' then (
+    save_game game "saved_game";
+    exit 0)
   else if event.key = 'q' then exit 0
   else game |> gle;
   ()
