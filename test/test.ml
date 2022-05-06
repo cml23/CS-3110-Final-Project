@@ -3,6 +3,7 @@ open Game.Ai
 open Game.State
 open Game.Board
 open Game.Canvas
+open Yojson
 
 (* TESTING PHILOSPHY: BLACK BOX & PLAY TESTING *)
 (* Due to the impossibility in testing every possible attribute in a
@@ -47,7 +48,10 @@ let print_capture_lst lst =
   ^ "\n" ^ "Captured pieces: "
   ^ print_pc_lst (snd lst)
 
-let def_bd = init_board
+let def_bd =
+  Game.Board.from_json
+    (Yojson.Basic.from_file "data/default_board.json")
+
 let def_bd_11del = del_pc def_bd 1 1
 
 let dim_x_test (name : string) (b : Game.Board.t) (exp_out : int) : test

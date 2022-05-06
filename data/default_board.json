@@ -1,0 +1,150 @@
+{
+  "tiles": [
+    {
+      "player": 1,
+      "id": 1,
+      "tile": 1,
+      "is_royal": false
+    },
+    {
+      "player": 1,
+      "id": 2,
+      "tile": 3,
+      "is_royal": false
+    },
+    {
+      "player": 1,
+      "id": 3,
+      "tile": 5,
+      "is_royal": false
+    },
+    {
+      "player": 1,
+      "id": 4,
+      "tile": 7,
+      "is_royal": false
+    },
+    {
+      "player": 1,
+      "id": 5,
+      "tile": 10,
+      "is_royal": false
+    },
+    {
+      "player": 1,
+      "id": 6,
+      "tile": 12,
+      "is_royal": false
+    },
+    {
+      "player": 1,
+      "id": 7,
+      "tile": 14,
+      "is_royal": false
+    },
+    {
+      "player": 1,
+      "id": 8,
+      "tile": 16,
+      "is_royal": false
+    },
+    {
+      "player": 1,
+      "id": 9,
+      "tile": 17,
+      "is_royal": false
+    },
+    {
+      "player": 1,
+      "id": 10,
+      "tile": 19,
+      "is_royal": false
+    },
+    {
+      "player": 1,
+      "id": 11,
+      "tile": 21,
+      "is_royal": false
+    },
+    {
+      "player": 1,
+      "id": 12,
+      "tile": 23,
+      "is_royal": false
+    },
+    {
+      "player": 2,
+      "id": 13,
+      "tile": 42,
+      "is_royal": false
+    },
+    {
+      "player": 2,
+      "id": 14,
+      "tile": 44,
+      "is_royal": false
+    },
+    {
+      "player": 2,
+      "id": 15,
+      "tile": 46,
+      "is_royal": false
+    },
+    {
+      "player": 2,
+      "id": 16,
+      "tile": 48,
+      "is_royal": false
+    },
+    {
+      "player": 2,
+      "id": 17,
+      "tile": 49,
+      "is_royal": false
+    },
+    {
+      "player": 2,
+      "id": 18,
+      "tile": 51,
+      "is_royal": false
+    },
+    {
+      "player": 2,
+      "id": 19,
+      "tile": 53,
+      "is_royal": false
+    },
+    {
+      "player": 2,
+      "id": 20,
+      "tile": 55,
+      "is_royal": false
+    },
+    {
+      "player": 2,
+      "id": 21,
+      "tile": 58,
+      "is_royal": false
+    },
+    {
+      "player": 2,
+      "id": 22,
+      "tile": 60,
+      "is_royal": false
+    },
+    {
+      "player": 2,
+      "id": 23,
+      "tile": 62,
+      "is_royal": false
+    },
+    {
+      "player": 2,
+      "id": 24,
+      "tile": 64,
+      "is_royal": false
+    }
+  ],
+  "columns": 8,
+  "rows": 8
+}
