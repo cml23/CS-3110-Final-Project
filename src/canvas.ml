@@ -259,26 +259,17 @@ let highlight (ev : Graphics.status) (b : Board.t) =
         2
 
 let player_names = [ "Howard"; "Cassidy"; "Anirudh" ]
-let p1_name = ref "Player 1"
-let p2_name = ref "Player 2"
+let p1_name = ref "Howard"
+let p2_name = ref "Anirudh"
 
-(**[load_turn_img img1 img2] loads [img1].png as the player 1 turn text,
-   and [img2].png as the player 2 turn text.*)
-let load_turn_img img1 img2 =
-  turn1_img :=
-    Some
-      (Graphic_image.of_image
-         (Png.load_as_rgb24
-            ("data/" ^ String.lowercase_ascii !p1_name ^ ".png")
-            []));
-  turn2_img :=
-    Some
-      (Graphic_image.of_image
-         (Png.load_as_rgb24
-            (String.lowercase_ascii "data/"
-            ^ String.lowercase_ascii !p2_name
-            ^ ".png")
-            []))
+(**[load_turn_img] loads the turn image [img] based on the name selected
+   by the player in [Main].*)
+let load_turn_img img =
+  Some
+    (Graphic_image.of_image
+       (Png.load_as_rgb24
+          ("data/" ^ String.lowercase_ascii img ^ ".png")
+          []))
 
 let turn_img = ref "Player 1"
 
@@ -302,7 +293,10 @@ let init =
   done
 
 let draw i st =
-  load_turn_img "data/player2.png" "data/player2.png";
+  (*turn images must be loaded separately to ensure they are updated
+    based on player input*)
+  turn1_img := load_turn_img !p1_name;
+  turn2_img := load_turn_img !p2_name;
   current_preset := i;
   let b = State.get_board st in
   draw_turn_img (State.get_player st)
