@@ -258,24 +258,36 @@ let highlight (ev : Graphics.status) (b : Board.t) =
         active_presets.(!current_preset)
         2
 
-let player_names =
-  [ "Player 1"; "Player 2"; "Howard"; "Cassidy"; "Anirudh" ]
-
+let player_names = [ "Howard"; "Cassidy"; "Anirudh" ]
 let p1_name = ref "Player 1"
 let p2_name = ref "Player 2"
 
-(**[load_turn_img img1 img2] loads [img1] as the player 1 turn text, and
-   [img2] as the player 2 turn text.*)
+(**[load_turn_img img1 img2] loads [img1].png as the player 1 turn text,
+   and [img2].png as the player 2 turn text.*)
 let load_turn_img img1 img2 =
-  turn1_img := Some (Graphic_image.of_image (Png.load_as_rgb24 img1 []));
-  turn2_img := Some (Graphic_image.of_image (Png.load_as_rgb24 img2 []))
+  turn1_img :=
+    Some
+      (Graphic_image.of_image
+         (Png.load_as_rgb24
+            ("data/" ^ String.lowercase_ascii !p1_name ^ ".png")
+            []));
+  turn2_img :=
+    Some
+      (Graphic_image.of_image
+         (Png.load_as_rgb24
+            (String.lowercase_ascii "data/"
+            ^ String.lowercase_ascii !p2_name
+            ^ ".png")
+            []))
 
 let turn_img = ref "Player 1"
 
 let draw_turn_img (player : int) x y =
   Graphics.moveto x y;
-  if player = 1 then Graphics.draw_string !p1_name
-  else Graphics.draw_string !p2_name
+  Graphics.set_color Graphics.white;
+  Graphics.fill_rect x y 50 13;
+  if player = 1 then draw_img !turn1_img x y
+  else draw_img !turn2_img x y
 
 let draw_score p1_score p2_score x y =
   Graphics.moveto x y;
@@ -285,12 +297,12 @@ let draw_score p1_score p2_score x y =
 let init =
   Graphics.open_graph "";
   (*Images must be loaded after opening graph to avoid errors.*)
-  load_turn_img "data/player1.png" "data/player2.png";
   for i = 0 to Array.length active_presets - 1 do
     load_images active_presets.(i)
   done
 
 let draw i st =
+  load_turn_img "data/player2.png" "data/player2.png";
   current_preset := i;
   let b = State.get_board st in
   draw_turn_img (State.get_player st)

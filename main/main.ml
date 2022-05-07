@@ -159,6 +159,17 @@ let rec load_game f =
     Stdlib.print_string "> ";
     get_file load_game
 
+(**[print_name_list lst] prints the preset list of player names given in
+   [lst] to the terminal.*)
+let rec print_name_list = function
+  | [] -> print_endline ""
+  | h :: t ->
+      print_endline ("-" ^ h);
+      print_name_list t
+
+(**[get_name loader] assigns the name input by the user to a player if
+   it is a valid name choice (based on the preset list given in
+   [Game.Canvas])*)
 let rec get_name loader =
   match read_line () with
   | exception End_of_file ->
@@ -171,6 +182,8 @@ let rec get_name loader =
       | h :: t -> h
     end
 
+(**[get_player_name player name] assigns a [name] to [player] based on
+   user input.*)
 let get_player_name player name =
   print_endline
     ("Please choose Player " ^ string_of_int player ^ " name.");
@@ -182,6 +195,8 @@ let get_player_name player name =
 let main () =
   ANSITerminal.print_string [ ANSITerminal.red ]
     "\n\nOCaml Checkers Initialized\n";
+  print_endline "\nAvailable player names: ";
+  print_name_list Canvas.player_names;
   get_player_name 1 Canvas.p1_name;
   get_player_name 2 Canvas.p2_name;
   print_endline
