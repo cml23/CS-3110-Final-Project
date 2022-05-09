@@ -56,19 +56,28 @@ let init_state (pl : int) (bd : Board.t) =
 (*=========GETTER FUNCTIONS=========*)
 
 let get_board (state : t) : Board.t = state.board
+
 let game_over (state : t) : bool = state.game_over
+
 let get_vc (state : t) : int = state.victor
 
 let get_pts (player : int) (state : t) : int =
   if player = state.victor then 1 else 0
 
 let get_player (state : t) : int = state.player_turn
+
 let get_moves (state : t) : (int * int) list = state.moves
+
 let get_caps (state : t) : (int * int) list = fst state.caps
+
 let unselected (state : t) : bool = state.sel = (-1, -1)
+
 let selected (state : t) : int * int = state.sel
+
 let get_if_mc (state : t) : bool = state.mc_pres
+
 let get_undos (state : t) : move list = state.undos
+
 let get_redos (state : t) : move list = state.redos
 
 (*=========INDEX FUNCTIONS=========*)
