@@ -1,5 +1,5 @@
 exception NoMove
-(** If the AI is unable to make any moves, through this exception. The
+(** If the AI is unable to make any moves, throw this exception. The
     game should never pass a state where the AI cannot make any moves. *)
 
 (** [get_loc_mvs st pc] returns the location and moves of a single
