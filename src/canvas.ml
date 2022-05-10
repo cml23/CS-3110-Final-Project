@@ -6,7 +6,6 @@ let swap_color (c : Graphics.color) : Graphics.color =
   else (Graphics.black : Graphics.color)
 
 type preset = {
-  (*p1_image : Images.t; p2_image : Images.t;*)
   image_paths : Images.t array;
   mutable tile1 : Graphics.image option;
   mutable tile2 : Graphics.image option;
@@ -17,7 +16,12 @@ type preset = {
   mutable highlight : Graphics.image option;
   tiles : Graphics.image option array;
 }
+(**[preset] contains all the skins for tiles, pieces, and highlighted
+   tiles associated with a particular graphical preset selected by the
+   player.*)
 
+(**[preset_skeleton] is the skeleton on which all presets are based,
+   with fields initialized to zero so as to avoid image loading errors.*)
 let preset_skeleton =
   {
     image_paths = Array.make 7 (Png.load_as_rgb24 "data/tile1.png" []);
@@ -110,7 +114,10 @@ let load_images p =
 let active_presets =
   [| default; yellow_purple; orange_blue; black_red |]
 
+(**[turn1_img] is the image of the name associated with Player 1.*)
 let turn1_img : Graphics.image option ref = ref None
+
+(**[turn2_img] is the image of the name associated with Player 2.*)
 let turn2_img : Graphics.image option ref = ref None
 
 let swap_preset idx =
@@ -130,8 +137,8 @@ let draw_img (img : Graphics.image option) (x : int) (y : int) =
   | None -> ()
   | Some image -> Graphics.draw_image image x y
 
-(**[draw_piece x y b pc tile_size] draws [pc] to the tile at [x] and
-   [y].*)
+(**[draw_piece x y b pc tile_size] draws [pc], whose image is drawn from
+   preset [p], to the tile at canvas position [(x,y)]*)
 let draw_piece
     (x : int)
     (y : int)
@@ -158,8 +165,10 @@ let draw_piece
       (x + (Constants.pc_size / 2))
       (y + (Constants.pc_size / 2))
 
-(**[draw_tile x y row col b tile_size color] draws the tile [(row,col)]
-   of [color] and size [tile_size] at position [(x,y)]*)
+(**[draw_tile x y row col b tile_size color] draws the tile of board [b]
+   at board index [(row,col)] with the image from the preset [p]'s
+   [p.tiles] at index [tile_index] and size [tile_size] at position
+   [(x,y)]*)
 let rec draw_tile
     (x : int)
     (y : int)
@@ -177,8 +186,12 @@ let rec draw_tile
       | Some pc -> draw_piece x y b pc tile_size p
       | None -> ())
 
-(**[draw_row x y row col b i tile_size color cols] draws a row of [i]
-   tiles colored with [color] starting at the position [(x,y). ] *)
+(**[draw_row x y row col b i tile_size color cols] draws a row of the
+   board [b] with [i] tiles. The current tile in the row being drawn is
+   located at tile index ([row], [col]), and the image that is assigned
+   to this particular tile is found in preset [p]'s [p.tiles] at the
+   index [tile_index]. All tiles are drawn at dimensions [tile_size] and
+   are drawn on the canvas at [(x, y)].*)
 let rec draw_row
     (x : int)
     (y : int)
@@ -195,8 +208,11 @@ let rec draw_row
     draw_row (x + tile_size) y (row + 1) col b (i - 1) tile_size p
       (swap_index tile_index)
 
-(**[draw_board x y row col b y_dim tile_size color] draws the board to
-   the game canvas using the board configuration of [b].*)
+(**[draw_board x y row col b y_dim tile_size color] draws the board [b],
+   which has [y_dim] number of rows left to be drawn to the baord. The
+   next tile to be drawn is located at board position [(row, col)], will
+   be drawn at canvas position [(x, y)] with size [tile_size], and will
+   take its image from the tile indexed at [tile_index] in [p.tiles].*)
 let rec draw_board
     (x : int)
     (y : int)
@@ -206,19 +222,22 @@ let rec draw_board
     (y_dim : int)
     (tile_size : int)
     (p : preset)
-    tile_index : unit =
+    (tile_index : int) : unit =
   draw_row x y row col b (Board.dim_x b) tile_size p tile_index;
   if y_dim = 1 then ()
   else
     draw_board x (y + tile_size) row (col + 1) b (y_dim - 1) tile_size p
       (swap_index tile_index)
 
-(**[get_coordinate i dim_start] calculates the coordinate of a tile from
-   its pixel location on the screen.*)
+(**[get_coordinate i dim_start] calculates the coordinate of a tile
+   based on its pixel location on the screen.*)
 let get_coordinate i dim_start =
   (float_of_int i -. float_of_int dim_start)
   /. float_of_int Constants.tile_size
   |> Float.floor |> ( +. ) 1. |> int_of_float
+
+let start_dim graphics_dim board_dim b =
+  (graphics_dim () - (board_dim b * Constants.tile_size)) / 2
 
 (**[find_tile x y start_x start_y] is the tile at [(x,y)] on the board
    where the bottom left hand corner of tile (1,1) is at position
@@ -241,7 +260,9 @@ let rec find_tile x y start_x start_y b =
 let mouse_input (ev : Graphics.status) (b : Board.t) :
     (int * int) option =
   match
-    find_tile ev.mouse_x ev.mouse_y Constants.start_x Constants.start_y
+    find_tile ev.mouse_x ev.mouse_y
+      (start_dim Graphics.size_x Board.dim_x b)
+      (start_dim Graphics.size_y Board.dim_y b)
       b
   with
   | Some (x, y, _, _) -> Some (x, y)
@@ -249,7 +270,9 @@ let mouse_input (ev : Graphics.status) (b : Board.t) :
 
 let highlight (ev : Graphics.status) (b : Board.t) =
   match
-    find_tile ev.mouse_x ev.mouse_y Constants.start_x Constants.start_y
+    find_tile ev.mouse_x ev.mouse_y
+      (start_dim Graphics.size_x Board.dim_x b)
+      (start_dim Graphics.size_y Board.dim_y b)
       b
   with
   | None -> ()
@@ -271,8 +294,6 @@ let load_turn_img img =
           ("data/" ^ String.lowercase_ascii img ^ ".png")
           []))
 
-let turn_img = ref "Player 1"
-
 let draw_turn_img (player : int) x y =
   Graphics.moveto x y;
   Graphics.set_color Graphics.white;
@@ -285,8 +306,15 @@ let draw_score p1_score p2_score x y =
   Graphics.draw_string
     (string_of_int p1_score ^ " : " ^ string_of_int p2_score)
 
-let init =
+let init b =
   Graphics.open_graph "";
+  let size_x =
+    (Board.dim_x b * Constants.tile_size) + Constants.start_x + 100
+  in
+  let size_y =
+    (Board.dim_y b * Constants.tile_size) + Constants.start_y + 100
+  in
+  Graphics.resize_window size_x size_y;
   (*Images must be loaded after opening graph to avoid errors.*)
   for i = 0 to Array.length active_presets - 1 do
     load_images active_presets.(i)
@@ -299,18 +327,21 @@ let draw i st =
   turn2_img := load_turn_img !p2_name;
   current_preset := i;
   let b = State.get_board st in
+  let start_x = start_dim Graphics.size_x Board.dim_x b in
+  let start_y = start_dim Graphics.size_y Board.dim_y b in
   draw_turn_img (State.get_player st)
-    (Constants.start_x + (Board.dim_x b * (Constants.tile_size + 1)))
-    Constants.start_y;
-  draw_board Constants.start_x Constants.start_y 1 1 b (Board.dim_y b)
-    Constants.tile_size
+    (start_x + (Board.dim_x b * (Constants.tile_size + 1)))
+    start_y;
+  draw_board start_x start_y 1 1 b (Board.dim_y b) Constants.tile_size
     active_presets.(!current_preset)
     0
 
 let draw_new_game i p1_score p2_score st =
   let b = State.get_board st in
+  init b;
   Graphics.clear_graph ();
+  let start_y = start_dim Graphics.size_y Board.dim_y b in
   draw_score 0 0
     (Graphics.size_x () / 2)
-    (Constants.start_y + (Board.dim_y b * (Constants.tile_size + 1)));
+    (start_y + (Board.dim_y b * Constants.tile_size) + 10);
   draw i st

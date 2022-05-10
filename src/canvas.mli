@@ -13,9 +13,12 @@ val player_names : string list
    from.*)
 
 val p1_name : string ref
-val p2_name : string ref
+(**[p1_name] is the name selected by Player 1.*)
 
-val init : unit
+val p2_name : string ref
+(**[p2_name] is the name selected by Player 2.*)
+
+val init : Board.t -> unit
 (**[init] initializes the Canvas and loads the images for all presets.*)
 
 val draw : int -> State.t -> unit
