@@ -5,8 +5,13 @@ type piece = {
   id : int;
   is_royal : bool;
 }
+(** Pieces are represented with a player number (1 or 2), a unique id,
+    and whether or not they are royal. *)
 
 type tile = piece option
+(** A tile is represented as a piece option where empty tiles are
+    represented as [None] and nonempty tiles are represented as
+    [Some pc] where [pc] is the piece located on that tile. *)
 
 type t = tile array * int
 (** A board can have any rectangular shape. The number of tiles per row
@@ -34,6 +39,9 @@ let pieces_of_player (b : t) pl =
 
 let num_pcs_of_pl b pl = List.length (pieces_of_player b pl)
 
+(** [idx_pc_aux tiles pc i] is None if tile [Some pc] is not present in
+    [tiles] and [Some i] if tile [Some pc] is present in [tiles] at
+    index [i]. *)
 let rec idx_pc_aux tiles pc i : int option =
   if i >= Array.length tiles then None
   else if tiles.(i) = Some pc then Some (i + 1)
@@ -184,6 +192,7 @@ let is_promotable (b : t) (pc : piece) =
       let row_max = Array.length (fst b) / snd b in
       (pc.player = 1 && y = row_max) || (pc.player = 2 && y = 1)
 
+(** [json_of_tiles tiles] is the json represented by [tiles]. *)
 let json_of_tiles (tiles : tile array) : Yojson.Basic.t list =
   let lst = ref [] in
   for i = 0 to Array.length tiles - 1 do
@@ -211,8 +220,6 @@ let to_json (b : t) : Yojson.Basic.t =
       ("columns", `Int (snd b));
       ("rows", `Int (Array.length (fst b) / snd b));
     ]
-
-(* TODO: Encapsulate 4 neighbor functions, get_x, get_y, get_idx. *)
 
 (* FUNCTIONS ADDED BY CASSIDY BELOW. *)
 

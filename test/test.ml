@@ -333,8 +333,10 @@ let urdo_test
   assert_equal exp_out (state |> f |> List.hd) ~printer:string_of_move
 
 (*=========BASIC TESTS=========*)
-let is1 = def_state
-let selected_state = new_state (3, 3) def_state
+let is1 = init_state 1 def_bd
+
+let selected_state = new_state (3, 3) is1
+
 let move_state = new_state (4, 4) selected_state
 
 (* TODO: Test move indirectly *)
@@ -393,7 +395,8 @@ let coord_applier (coords : (int * int) list) (st : Game.State.t) =
 (* Create new state to prevent Stack mutability from crossing to new
    test cases.*)
 let cap_coords = [ (3, 3); (4, 4); (6, 6); (5, 5); (4, 4) ]
-let cap_state = def_state |> coord_applier cap_coords
+
+let cap_state = is1 |> coord_applier cap_coords
 
 let cap_tests =
   [
@@ -432,8 +435,9 @@ let mc_cords =
     (2, 4);
   ]
 
-let mc_state = def_state |> coord_applier mc_cords
-let mc_state2 = def_state |> coord_applier mc_cords |> new_state (2, 4)
+let mc_state = is1 |> coord_applier mc_cords
+
+let mc_state2 = is1 |> coord_applier mc_cords |> new_state (2, 4)
 
 let mc_tests =
   [
@@ -457,26 +461,29 @@ let mc_tests =
 
 (*=========UNDO & REDO TESTS=========*)
 let u1_state = mc_state2 |> urdo true |> get_state
+
 let u2_state = u1_state |> urdo true |> get_state
+
 let u3_state = u2_state |> urdo true |> get_state
+
 let r1_state = u2_state |> urdo false |> get_state
 
 let urdo_tests =
   [
     int_test get_player "P2 Undo MC State: player number" u1_state 2;
-    unselected_test "P2 MC State: unselected" mc_state true;
-    selected_test "P2 MC State: selected" mc_state (-1, -1);
-    getter_test "P2 MC State: moves" mc_state get_moves [];
-    getter_test "P2 MC State: captures" mc_state get_caps [ (4, 2) ];
-    urdo_len_test "P2 MC State: 2 undo possible" mc_state
-      Game.State.get_undos 6;
-    int_test get_player "P2 Undo MC State: player number" u1_state 2;
-    unselected_test "P2 MC State: unselected" mc_state true;
-    selected_test "P2 MC State: selected" mc_state (-1, -1);
-    getter_test "P2 MC State: moves" mc_state get_moves [];
-    getter_test "P2 MC State: captures" mc_state get_caps [ (4, 2) ];
-    urdo_len_test "P2 MC State: 2 undo possible" mc_state
-      Game.State.get_undos 6;
+    unselected_test "P2 MC State: unselected" u1_state true;
+    selected_test "P2 MC State: selected" u1_state (-1, -1);
+    getter_test "P2 MC State: moves" u1_state get_moves [];
+    getter_test "P2 MC State: captures" u1_state get_caps [];
+    urdo_len_test "P2 MC State: 2 undo possible" u1_state
+      Game.State.get_undos 5;
+    int_test get_player "P1 Undo MC State: player number" u2_state 2;
+    unselected_test "P1 MC State: unselected" u2_state true;
+    selected_test "P1 MC State: selected" u2_state (-1, -1);
+    getter_test "P1 MC State: moves" u2_state get_moves [];
+    getter_test "P1 MC State: captures" u2_state get_caps [];
+    urdo_len_test "P1 MC State: 2 undo possible" u2_state
+      Game.State.get_undos 4;
     int_test get_player "P2 Undo MC State: player number" u1_state 2;
     unselected_test "P2 MC State: unselected" mc_state true;
     selected_test "P2 MC State: selected" mc_state (-1, -1);
