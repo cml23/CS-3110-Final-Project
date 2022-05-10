@@ -69,11 +69,10 @@ let sel_play
 (** [no_mv bd] checks whether the ai can make a move or not. *)
 let no_play (bd : Board.t) : bool = Board.num_pcs_of_pl bd 2 = 0
 
-let make_mv (st : State.t) : State.turn =
+let make_mv (st : State.t) =
   if no_play (State.get_board st) then raise NoMove
   else
     let play = st |> get_plays |> sel_play in
-    st
-    |> State.update (fst play)
-    |> State.get_state
-    |> State.update (snd play)
+    snd play
+(*let play = st |> get_plays |> sel_play in st |> State.update (fst
+  play) |> State.get_state |> State.update (snd play)*)
