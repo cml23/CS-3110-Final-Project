@@ -8,6 +8,7 @@ type t = {
   state : State.t;
   turn : State.turn;
   preset : int;
+  use_ai : bool;
 }
 
 (* [default_game]*)
@@ -38,7 +39,7 @@ let from_json_state json =
     (json |> member "turn" |> to_int)
     (Board.from_json (json |> member "board"))
 
-let from_json json : t =
+let from_json use_ai1 json : t =
   let open Yojson.Basic.Util in
   let st = from_json_state json in
   {
@@ -47,6 +48,7 @@ let from_json json : t =
     preset = json |> member "preset" |> to_int;
     state = st;
     turn = Continue st;
+    use_ai = use_ai1;
   }
 
 let save_game (g : t) (name : string) : unit =
@@ -128,16 +130,15 @@ let rec game_loop (e : Graphics.status) (game : t) : _ =
   (* if State.game_over game.state then let game = (change_sc game); *)
   draw_st game;
   draw_turn game;
-  (if State.get_player game.state = 1 then
-   if e.button then highlight e game else ()
-  else
+  if game.use_ai && State.get_player game.state = 2 then (
     let new_turn = Ai.make_mv game.state in
     Unix.sleep 1;
     let new_game =
       { game with turn = new_turn; state = State.get_state new_turn }
     in
-    game_loop e new_game);
-
+    game_loop e new_game)
+  else if e.button then highlight e game
+  else ();
   event_handler gl_ref game
 
 (* [start_game game]*)
@@ -157,15 +158,15 @@ let rec get_file loader =
   | file_name -> loader (data_dir_prefix ^ file_name ^ file_format)
 
 (* [load_game f]*)
-let rec load_game f =
-  try f |> Yojson.Basic.from_file |> from_json |> start_game
+let rec load_game use_ai f =
+  try f |> Yojson.Basic.from_file |> from_json use_ai |> start_game
   with _ ->
     ANSITerminal.print_string [ ANSITerminal.red ]
       "Invalid file name, please try again.\n";
     print_endline
       "Please enter the name of the game file you want to load.\n";
     Stdlib.print_string "> ";
-    get_file load_game
+    get_file (load_game use_ai)
 
 (**[print_name_list lst] prints the preset list of player names given in
    [lst] to the terminal.*)
@@ -199,12 +200,28 @@ let get_player_name player name =
   name := get_name ();
   print_endline ""
 
+let rec get_yes_no loader =
+  match read_line () with
+  | "1" -> true
+  | "2" -> false
+  | _ ->
+      print_endline "Pleasae choose 1 or 2. \n";
+      get_yes_no ()
+
+let get_ai () =
+  print_endline "Do you have one or two players?";
+  print_string "> ";
+  let use_ai = get_yes_no () in
+  print_endline "";
+  use_ai
+
 (** [main] starts a game based on .*)
 let main () =
   ANSITerminal.print_string [ ANSITerminal.red ]
     "\n\nOCaml Checkers Initialized\n";
   print_endline "\nAvailable player names: ";
   print_name_list Canvas.player_names;
+  let use_ai = get_ai () in
   get_player_name 1 Canvas.p1_name;
   get_player_name 2 Canvas.p2_name;
   print_endline
@@ -212,7 +229,7 @@ let main () =
   print_endline
     "Or enter \"default\" to start a standard checkers game.";
   print_string "> ";
-  get_file load_game
+  get_file (load_game use_ai)
 
 (* Execute the game engine. *)
 let () = main ()
