@@ -43,7 +43,7 @@ let find_captures
   List.map (fun (a, b, c) -> (a, c)) (List.filter has_captures plays)
 
 (** [find_moves plays] is the list of piece locations and corresponding
-    moves lists for [plays], excluding andy pieces that cannot make
+    moves lists for [plays], excluding any pieces that cannot make
     moves. *)
 let find_moves
     (plays : ((int * int) * (int * int) list * (int * int) list) list) =
@@ -73,6 +73,14 @@ let make_mv (st : State.t) =
   if no_play (State.get_board st) then raise NoMove
   else
     let play = st |> get_plays |> sel_play in
+    print_string
+      (string_of_int (fst (fst play))
+      ^ ", "
+      ^ string_of_int (snd (fst play))
+      ^ "to"
+      ^ string_of_int (fst (snd play))
+      ^ ", "
+      ^ string_of_int (snd (snd play)));
     snd play
 (*let play = st |> get_plays |> sel_play in st |> State.update (fst
   play) |> State.get_state |> State.update (snd play)*)
