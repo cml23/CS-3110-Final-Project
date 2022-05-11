@@ -18,11 +18,11 @@ type t = tile array * int
     (i.e., the number of columns) is given by the second number in the
     tuple representation. *)
 
-let get_x (b : t) i = ((i - 1) mod snd b) + 1
-let get_y (b : t) i = ((i - 1) / snd b) + 1
-let get_idx (b : t) x y = (snd b * (y - 1)) + x
-let dim_x (b : t) = snd b
-let dim_y (b : t) = Array.length (fst b) / snd b
+let get_x (b : t) (i : int) : int = ((i - 1) mod snd b) + 1
+let get_y (b : t) (i : int) : int = ((i - 1) / snd b) + 1
+let get_idx (b : t) (x : int) (y : int) : int = (snd b * (y - 1)) + x
+let dim_x (b : t) : int = snd b
+let dim_y (b : t) : int = Array.length (fst b) / snd b
 
 let piece_of_xy (b : t) x y =
   match Array.get (fst b) (get_idx b x y - 1) with
@@ -37,12 +37,14 @@ let pieces_of_player (b : t) pl =
       | Some p -> if p.player = pl then p :: acc else acc)
     [] (fst b)
 
-let num_pcs_of_pl b pl = List.length (pieces_of_player b pl)
+let num_pcs_of_pl (b : t) (pl : int) : int =
+  List.length (pieces_of_player b pl)
 
 (** [idx_pc_aux tiles pc i] is None if tile [Some pc] is not present in
     [tiles] and [Some i] if tile [Some pc] is present in [tiles] at
     index [i]. *)
-let rec idx_pc_aux tiles pc i : int option =
+let rec idx_pc_aux (tiles : tile array) (pc : piece) (i : int) :
+    int option =
   if i >= Array.length tiles then None
   else if tiles.(i) = Some pc then Some (i + 1)
   else idx_pc_aux tiles pc (i + 1)
@@ -53,16 +55,16 @@ let xy_of_pc (b : t) pc =
   | None -> None
   | Some i -> Some (get_x b i, get_y b i)
 
-let up_r b x y =
+let up_r (b : t) (x : int) (y : int) : (int * int) option =
   if x < dim_x b && y < dim_y b then Some (x + 1, y + 1) else None
 
-let up_l b x y =
+let up_l (b : t) (x : int) (y : int) : (int * int) option =
   if x > 1 && y < dim_y b then Some (x - 1, y + 1) else None
 
-let down_r b x y =
+let down_r (b : t) (x : int) (y : int) : (int * int) option =
   if x < dim_x b && y > 1 then Some (x + 1, y - 1) else None
 
-let down_l (b : t) x y =
+let down_l (b : t) (x : int) (y : int) : (int * int) option =
   if x > 1 && y > 1 then Some (x - 1, y - 1) else None
 
 let copy_bd (b : t) : t = (Array.copy (fst b), snd b)
@@ -238,7 +240,7 @@ let tile_of_json (a : tile array) json : unit =
   in
   a.(pos - 1) <- tile
 
-let from_json json =
+let from_json (json : Yojson.Basic.t) : t =
   let open Yojson.Basic.Util in
   let rows = json |> member "rows" |> to_int in
   let cols = json |> member "columns" |> to_int in
