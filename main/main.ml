@@ -205,11 +205,11 @@ let rec get_yes_no loader =
   | "1" -> true
   | "2" -> false
   | _ ->
-      print_endline "Pleasae choose 1 or 2. \n";
+      print_endline "Please choose 1 or 2. \n";
       get_yes_no ()
 
 let get_ai () =
-  print_endline "Do you have one or two players?";
+  print_endline "Do you have 1 or 2 players?";
   print_string "> ";
   let use_ai = get_yes_no () in
   print_endline "";
