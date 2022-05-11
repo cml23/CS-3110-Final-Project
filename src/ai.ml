@@ -24,14 +24,16 @@ let get_plays (st : State.t) :
 (** [has_captures plays_of_pc] is true if the list [plays_of_pc] has a
     list of nonzero length for its captures list; false otherwise. *)
 let has_captures
-    (plays_of_pc : (int * int) * (int * int) list * (int * int) list) =
+    (plays_of_pc : (int * int) * (int * int) list * (int * int) list) :
+    bool =
   match plays_of_pc with
   | loc, mvs, caps -> List.length caps > 0
 
 (** [has_moves plays_of_pc] is true if the list [plays_of_pc] has a list
     of nonzero length for its moves list; false otherwise. *)
 let has_moves
-    (plays_of_pc : (int * int) * (int * int) list * (int * int) list) =
+    (plays_of_pc : (int * int) * (int * int) list * (int * int) list) :
+    bool =
   match plays_of_pc with
   | loc, mvs, caps -> List.length mvs > 0
 
@@ -39,14 +41,16 @@ let has_moves
     corresponding captures lists for [plays], excluding andy pieces that
     cannot make captures. *)
 let find_captures
-    (plays : ((int * int) * (int * int) list * (int * int) list) list) =
+    (plays : ((int * int) * (int * int) list * (int * int) list) list) :
+    ((int * int) * (int * int) list) list =
   List.map (fun (a, b, c) -> (a, c)) (List.filter has_captures plays)
 
 (** [find_moves plays] is the list of piece locations and corresponding
     moves lists for [plays], excluding any pieces that cannot make
     moves. *)
 let find_moves
-    (plays : ((int * int) * (int * int) list * (int * int) list) list) =
+    (plays : ((int * int) * (int * int) list * (int * int) list) list) :
+    ((int * int) * (int * int) list) list =
   List.map (fun (a, b, c) -> (a, b)) (List.filter has_moves plays)
 
 (** [sel_play plays] is a play (an initial and final piece location. If
@@ -69,13 +73,9 @@ let sel_play
 (** [no_mv bd] checks whether the ai can make a move or not. *)
 let no_play (bd : Board.t) : bool = Board.num_pcs_of_pl bd 2 = 0
 
-let make_mv (st : State.t) =
+let make_mv (st : State.t) : State.turn =
   if no_play (State.get_board st) then raise NoMove
   else
-    (*let play = st |> get_plays |> sel_play in print_string
-      (string_of_int (fst (fst play)) ^ ", " ^ string_of_int (snd (fst
-      play)) ^ "to" ^ string_of_int (fst (snd play)) ^ ", " ^
-      string_of_int (snd (snd play))); snd play*)
     let play = st |> get_plays |> sel_play in
     st
     |> State.update (fst play)

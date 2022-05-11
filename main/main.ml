@@ -39,7 +39,7 @@ let from_json_state json =
     (json |> member "turn" |> to_int)
     (Board.from_json (json |> member "board"))
 
-let from_json use_ai1 json : t =
+let from_json (use_ai1 : bool) (json : Yojson.Basic.t) : t =
   let open Yojson.Basic.Util in
   let st = from_json_state json in
   {
@@ -158,7 +158,7 @@ let rec get_file loader =
   | file_name -> loader (data_dir_prefix ^ file_name ^ file_format)
 
 (* [load_game f]*)
-let rec load_game use_ai f =
+let rec load_game (use_ai : bool) (f : string) =
   try f |> Yojson.Basic.from_file |> from_json use_ai |> start_game
   with _ ->
     ANSITerminal.print_string [ ANSITerminal.red ]
@@ -203,7 +203,7 @@ let get_player_name player name =
   name := get_name ();
   print_endline ""
 
-let rec get_yes_no loader =
+let rec get_yes_no (loader : unit) : bool =
   match read_line () with
   | "1" -> true
   | "2" -> false
@@ -211,7 +211,7 @@ let rec get_yes_no loader =
       print_endline "Please choose 1 or 2. \n";
       get_yes_no ()
 
-let get_ai () =
+let get_ai () : bool =
   print_endline "Do you have 1 or 2 players?";
   print_string "> ";
   let use_ai = get_yes_no () in
