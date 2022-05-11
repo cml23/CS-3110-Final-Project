@@ -77,14 +77,6 @@ let make_mv (st : State.t) =
       play)) ^ "to" ^ string_of_int (fst (snd play)) ^ ", " ^
       string_of_int (snd (snd play))); snd play*)
     let play = st |> get_plays |> sel_play in
-    print_string
-      (string_of_int (fst (fst play))
-      ^ ","
-      ^ string_of_int (snd (fst play))
-      ^ " to "
-      ^ string_of_int (fst (snd play))
-      ^ ","
-      ^ string_of_int (snd (snd play)));
     st
     |> State.update (fst play)
     |> State.get_state

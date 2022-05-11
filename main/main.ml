@@ -128,9 +128,17 @@ let rec game_loop (e : Graphics.status) (game : t) : _ =
   (* if State.game_over game.state then let game = (change_sc game); *)
   draw_st game;
   draw_turn game;
-  if e.button then highlight e game else ();
-  event_handler gl_ref game;
-  ()
+  (if State.get_player game.state = 1 then
+   if e.button then highlight e game else ()
+  else
+    let new_turn = Ai.make_mv game.state in
+    Unix.sleep 1;
+    let new_game =
+      { game with turn = new_turn; state = State.get_state new_turn }
+    in
+    game_loop e new_game);
+
+  event_handler gl_ref game
 
 (* [start_game game]*)
 let start_game game =
