@@ -173,7 +173,7 @@ let rec load_game use_ai f =
 let rec print_name_list = function
   | [] -> print_endline ""
   | h :: t ->
-      print_endline ("-" ^ h);
+      if h <> "AI" then print_endline ("-" ^ h) else ();
       print_name_list t
 
 (**[get_name loader] assigns the name input by the user to a player if
@@ -184,9 +184,12 @@ let rec get_name loader =
   | exception End_of_file ->
       "That is not a valid name. Please try again. \n"
   | s -> begin
-      match List.filter (fun y -> y = s) Canvas.player_names with
+      match
+        List.filter (fun y -> y = s && y <> "AI") Canvas.player_names
+      with
       | [] ->
           print_endline "That is not a valid name. Please try again.\n";
+          print_string "> ";
           get_name ()
       | h :: t -> h
     end
@@ -223,7 +226,8 @@ let main () =
   print_name_list Canvas.player_names;
   let use_ai = get_ai () in
   get_player_name 1 Canvas.p1_name;
-  get_player_name 2 Canvas.p2_name;
+  if use_ai then Canvas.p2_name := "AI"
+  else get_player_name 2 Canvas.p2_name;
   print_endline
     "Please enter the name of the save file you want to load.\n";
   print_endline
