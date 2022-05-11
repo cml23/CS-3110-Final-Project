@@ -281,7 +281,7 @@ let highlight (ev : Graphics.status) (b : Board.t) =
         active_presets.(!current_preset)
         2
 
-let player_names = [ "Howard"; "Cassidy"; "Anirudh" ]
+let player_names = [ "Howard"; "Cassidy"; "Anirudh"; "AI" ]
 let p1_name = ref "Howard"
 let p2_name = ref "Anirudh"
 
