@@ -60,7 +60,7 @@ let save_game (g : t) (name : string) : unit =
 
 let change_st (chg : 'a -> State.t -> State.turn) (v : 'a) (game : t) :
     t =
-  let nt = chg v game.state in
+  let nt = chg v game.state in 
   { game with state = State.get_state nt; turn = nt }
 
 let process_mv (coord : int * int) (game : t) : t =
