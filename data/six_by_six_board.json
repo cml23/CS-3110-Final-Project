@@ -1,0 +1,78 @@
+{
+  "tiles": [
+    {
+      "player": 1,
+      "id": 1,
+      "tile": 1,
+      "is_royal": false
+    },
+    {
+      "player": 1,
+      "id": 2,
+      "tile": 3,
+      "is_royal": false
+    },
+    {
+      "player": 1,
+      "id": 3,
+      "tile": 5,
+      "is_royal": false
+    },
+    {
+      "player": 1,
+      "id": 4,
+      "tile": 8,
+      "is_royal": false
+    },
+    {
+      "player": 1,
+      "id": 5,
+      "tile": 10,
+      "is_royal": false
+    },
+    {
+      "player": 1,
+      "id": 6,
+      "tile": 12,
+      "is_royal": false
+    },
+    {
+      "player": 2,
+      "id": 7,
+      "tile": 25,
+      "is_royal": false
+    },
+    {
+      "player": 2,
+      "id": 8,
+      "tile": 27,
+      "is_royal": false
+    },
+    {
+      "player": 2,
+      "id": 9,
+      "tile": 29,
+      "is_royal": false
+    },
+    {
+      "player": 2,
+      "id": 10,
+      "tile": 32,
+      "is_royal": false
+    },
+    {
+      "player": 2,
+      "id": 11,
+      "tile": 34,
+      "is_royal": false
+    },
+    {
+      "player": 2,
+      "id": 12,
+      "tile": 36,
+      "is_royal": false
+    }
+  ],
+  "columns": 6,
+  "rows": 6
+}

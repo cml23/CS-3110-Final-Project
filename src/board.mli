@@ -1,3 +1,5 @@
+(** Representation of the board and its pieces. *)
+
 type piece = {
   player : int;
   id : int;

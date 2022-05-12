@@ -48,9 +48,19 @@ let print_capture_lst lst =
   ^ "\n" ^ "Captured pieces: "
   ^ print_pc_lst (snd lst)
 
-let def_bd =
-  Game.Board.from_json
-    (Yojson.Basic.from_file "data/default_board.json")
+let def_bd_json = Yojson.Basic.from_file "data/default_board.json"
+
+let def_bd = Game.Board.from_json def_bd_json
+
+let four_by_ten_bd_json =
+  Yojson.Basic.from_file "data/four_by_ten_board.json"
+
+let four_by_ten_bd = Game.Board.from_json four_by_ten_bd_json
+
+let six_by_six_bd_json =
+  Yojson.Basic.from_file "data/six_by_six_board.json"
+
+let six_by_six_bd = Game.Board.from_json six_by_six_bd_json
 
 let def_bd_11del = del_pc def_bd 1 1
 
@@ -132,14 +142,18 @@ let is_promotable_test
   name >:: fun _ ->
   assert_equal exp_out (is_promotable b pc) ~printer:string_of_bool
 
-(* let json_test (name : string) (json : Yojson.t) = name >:: fun _ ->
-   assert_equal json (let open Main.Main in to_json (from_json json)) *)
-(* TODO: Fix this function. Cannot access functions from Main. *)
+let json_test (name : string) (json : Yojson.Basic.t) =
+  name >:: fun _ ->
+  assert_equal json (Game.Board.to_json (Game.Board.from_json json))
 
 let board_tests =
   [
     dim_x_test "default board x-dim" def_bd 8;
     dim_y_test "default board y-dim" def_bd 8;
+    dim_x_test "four_by_ten board x-dim" four_by_ten_bd 4;
+    dim_y_test "four_by_ten_bd board y-dim" four_by_ten_bd 10;
+    dim_x_test "six_by_six_bd board x-dim" six_by_six_bd 6;
+    dim_y_test "six_by_six_bd board y-dim" six_by_six_bd 6;
     piece_of_xy_test "default board at 1,1" def_bd 1 1
       (Some { player = 1; id = 1; is_royal = false });
     piece_of_xy_test "default board at 6,2" def_bd 6 2
@@ -147,8 +161,26 @@ let board_tests =
     piece_of_xy_test "default board at 8,8" def_bd 8 8
       (Some { player = 2; id = 24; is_royal = false });
     piece_of_xy_test "default board at 6,4" def_bd 6 4 None;
+    piece_of_xy_test "four_by_ten_bd at 1,1" four_by_ten_bd 1 1
+      (Some { player = 1; id = 1; is_royal = false });
+    piece_of_xy_test "four_by_ten_bd at 3,9" four_by_ten_bd 3 9
+      (Some { player = 2; id = 10; is_royal = false });
+    piece_of_xy_test "four_by_ten_bd at 4,10" four_by_ten_bd 4 10
+      (Some { player = 2; id = 12; is_royal = false });
+    piece_of_xy_test "four_by_ten_bd at 2,4" four_by_ten_bd 2 4 None;
+    piece_of_xy_test "six_by_six_bd at 1,1" six_by_six_bd 1 1
+      (Some { player = 1; id = 1; is_royal = false });
+    piece_of_xy_test "six_by_six_bd at 4,2" six_by_six_bd 4 2
+      (Some { player = 1; id = 5; is_royal = false });
+    piece_of_xy_test "six_by_six_bd at 6,6" six_by_six_bd 6 6
+      (Some { player = 2; id = 12; is_royal = false });
+    piece_of_xy_test "six_by_six_bd at 4,3" six_by_six_bd 4 3 None;
     num_pcs_of_pl_test "default board, #pcs for pl1" def_bd 1 12;
     num_pcs_of_pl_test "default board, #pcs for pl2" def_bd 2 12;
+    num_pcs_of_pl_test "four_by_ten_bd, #pcs for pl1" four_by_ten_bd 1 6;
+    num_pcs_of_pl_test "four_by_ten_bd, #pcs for pl2" four_by_ten_bd 2 6;
+    num_pcs_of_pl_test "six_by_six_bd, #pcs for pl1" six_by_six_bd 1 6;
+    num_pcs_of_pl_test "six_by_six_bd, #pcs for pl2" six_by_six_bd 2 6;
     xy_of_pc_test "default board; piece at 1,1" def_bd
       { player = 1; id = 1; is_royal = false }
       (Some (1, 1));
@@ -157,6 +189,24 @@ let board_tests =
       (Some (8, 8));
     xy_of_pc_test "default board; nonexistent pc" def_bd
       { player = 1; id = 13; is_royal = false }
+      None;
+    xy_of_pc_test "four_by_ten_bd; piece at 1,1" four_by_ten_bd
+      { player = 1; id = 1; is_royal = false }
+      (Some (1, 1));
+    xy_of_pc_test "four_by_ten_bd; piece at 4,10" four_by_ten_bd
+      { player = 2; id = 12; is_royal = false }
+      (Some (4, 10));
+    xy_of_pc_test "four_by_ten_bd; nonexistent pc" four_by_ten_bd
+      { player = 1; id = 7; is_royal = false }
+      None;
+    xy_of_pc_test "six_by_six_bd; piece at 1,1" six_by_six_bd
+      { player = 1; id = 1; is_royal = false }
+      (Some (1, 1));
+    xy_of_pc_test "six_by_six_bd; piece at 6,6" six_by_six_bd
+      { player = 2; id = 12; is_royal = false }
+      (Some (6, 6));
+    xy_of_pc_test "six_by_six_bd; nonexistent pc" six_by_six_bd
+      { player = 1; id = 7; is_royal = false }
       None;
     neigbor_test "default board; up r of 1,1" up_r def_bd 1 1
       (Some (2, 2));
@@ -211,6 +261,12 @@ let board_tests =
     is_promotable_test "def bd; no promotable pc at 8,6" def_bd
       { player = 2; id = 16; is_royal = false }
       false;
+    json_test "check correct to/from json parsing for def_bd"
+      def_bd_json;
+    json_test "check correct to/from json parsing for four_by_ten_bd"
+      four_by_ten_bd_json;
+    json_test "check correct to/from json parsing for six_by_six_bd"
+      six_by_six_bd_json;
   ]
 
 (* Add helper functions for testing State here.*)
