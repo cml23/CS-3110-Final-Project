@@ -13,8 +13,12 @@ type t = {
 
 (* [default_game]*)
 let file_format = ".json"
+
 let default_game = "default_layout"
+
 let data_dir_prefix = "data" ^ Filename.dir_sep
+
+let game_name = ref (data_dir_prefix ^ "default_layout" ^ file_format)
 
 (*=========LOADERS=========*)
 
@@ -60,6 +64,11 @@ let save_game (g : t) (name : string) : unit =
 
 (*=========GAME MANIPULATION FUNCTIONS=========*)
 
+let is_p1_win (game : t) : bool =
+  if not (game.state |> State.game_over) then
+    failwith "Called when game is not over"
+  else game.state |> State.get_vc = 1
+
 let change_st (chg : 'a -> State.t -> State.turn) (v : 'a) (game : t) :
     t =
   let nt = chg v game.state in
@@ -71,12 +80,12 @@ let process_mv (coord : int * int) (game : t) : t =
 let urdo_mv (undo : bool) (game : t) : t =
   change_st State.urdo undo game
 
-let change_sc (game : t) : t =
+let change_sc (p1_win : bool) (game : t) : t =
   let new_game =
     {
       game with
-      p1_sc = game.p1_sc + State.get_pts 1 game.state;
-      p2_sc = game.p2_sc + State.get_pts 2 game.state;
+      p1_sc = (game.p1_sc + if p1_win then 1 else 0);
+      p2_sc = (game.p2_sc + if not p1_win then 1 else 0);
     }
   in
   print_endline (string_of_int new_game.p1_sc);
@@ -84,25 +93,25 @@ let change_sc (game : t) : t =
   new_game
 
 let restart_gm (game : t) : t =
-  {
-    game with
-    turn =
-      Legal
-        (data_dir_prefix ^ default_game ^ file_format
-        |> Yojson.Basic.from_file |> from_json_state);
-  }
+  let new_state =
+    !game_name |> Yojson.Basic.from_file |> from_json_state
+  in
+  { game with state = new_state; turn = Legal new_state }
 
 let change_preset (game : t) : t =
   { game with preset = Game.Canvas.swap_preset game.preset }
 
+let check_win (game : t) : t =
+  if game.state |> State.game_over then (
+    let new_sc_game =
+      game |> change_sc (game |> is_p1_win) |> restart_gm
+    in
+    Canvas.draw_new_game game.preset game.p1_sc game.p2_sc game.state;
+    new_sc_game)
+  else game
+
 (*=========DRAW FUNCTIONS========*)
 let draw_st (game : t) : _ = game.state |> Game.Canvas.draw game.preset
-let dc (st : State.t) : _ = ()
-let dl (st : State.t) : _ = ()
-let di (st : State.t) : _ = ()
-let du (st : State.t) : _ = ()
-let dr (st : State.t) : _ = ()
-let draw_turn (game : t) : _ = State.match_turn dc dl di du dr game.turn
 
 let highlight (e : Graphics.status) (game : t) : _ =
   game.state |> State.get_board |> Canvas.highlight e
@@ -134,7 +143,7 @@ let rec event_handler glref (game : t) : _ =
 let rec game_loop (e : Graphics.status) (game : t) : _ =
   (* if State.game_over game.state then let game = (change_sc game); *)
   draw_st game;
-  draw_turn game;
+  let game = game |> check_win in
   if game.use_ai && State.get_player game.state = 2 then
     try
       let new_turn = Ai.make_mv game.state in
@@ -145,9 +154,7 @@ let rec game_loop (e : Graphics.status) (game : t) : _ =
       game_loop e gm
     with
     | Game.Ai.NoMove ->
-        let gm = change_sc game in
-        let gm' = restart_gm gm in
-        game_loop e gm'
+        game |> change_sc true |> restart_gm |> game_loop e
     | current_game -> ()
   else if e.button then highlight e game
   else ();
@@ -171,7 +178,9 @@ let rec get_file loader =
 
 (* [load_game f]*)
 let rec load_game (use_ai : bool) (f : string) =
-  try f |> Yojson.Basic.from_file |> from_json use_ai |> start_game
+  try
+    game_name := f;
+    f |> Yojson.Basic.from_file |> from_json use_ai |> start_game
   with _ ->
     ANSITerminal.print_string [ ANSITerminal.red ]
       "Invalid file name, please try again.\n";
