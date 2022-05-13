@@ -113,6 +113,30 @@ let highlight (e : Graphics.status) (game : t) : _ =
 (* [glref event game] stores [game_loop] as a *)
 let gl_ref = ref (fun a b -> ())
 
+let check_win glref (e : Graphics.status) (game : t) : _ =
+  if game.state |> State.game_over then (
+    Unix.sleepf 1.0;
+    let new_sc_game =
+      game |> change_sc (game |> is_p1_win) |> restart_gm
+    in
+    Canvas.draw_new_game new_sc_game.preset new_sc_game.p1_sc
+      new_sc_game.p2_sc new_sc_game.state;
+    !gl_ref e new_sc_game)
+  else ()
+
+let check_ai glref (e : Graphics.status) (game : t) : _ =
+  if game.use_ai && State.get_player game.state = 2 then
+    try
+      let new_turn = Ai.make_mv game.state in
+      Unix.sleep 1;
+      let gm =
+        { game with turn = new_turn; state = State.get_state new_turn }
+      in
+      !glref e gm
+    with
+    | Game.Ai.NoMove -> game |> change_sc true |> restart_gm |> !glref e
+    | current_game -> ()
+
 (* [event_handler glref game]*)
 let rec event_handler glref (game : t) : _ =
   let event = Graphics.wait_next_event [ Button_down; Key_pressed ] in
@@ -136,21 +160,9 @@ let rec event_handler glref (game : t) : _ =
 let rec game_loop (e : Graphics.status) (game : t) : _ =
   (* if State.game_over game.state then let game = (change_sc game); *)
   draw_st game;
-  let game = game |> check_win in
-  if game.use_ai && State.get_player game.state = 2 then
-    try
-      let new_turn = Ai.make_mv game.state in
-      Unix.sleep 1;
-      let gm =
-        { game with turn = new_turn; state = State.get_state new_turn }
-      in
-      game_loop e gm
-    with
-    | Game.Ai.NoMove ->
-        game |> change_sc true |> restart_gm |> game_loop e
-    | current_game -> ()
-  else if e.button then highlight e game
-  else ();
+  check_win gl_ref e game;
+  check_ai gl_ref e game;
+  if e.button then highlight e game else ();
   event_handler gl_ref game
 
 (* [start_game game]*)
