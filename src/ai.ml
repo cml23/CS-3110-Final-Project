@@ -70,7 +70,7 @@ let sel_play
   let sndi = Random.int (sndl |> List.length) in
   (fst selp, List.nth sndl sndi)
 
-(** [no_mv bd] checks whether the ai can make a move or not. *)
+(** [no_play bd] checks whether the ai can make a move or not. *)
 let no_play (bd : Board.t) : bool = Board.num_pcs_of_pl bd 2 = 0
 
 let make_mv (st : State.t) : State.turn =

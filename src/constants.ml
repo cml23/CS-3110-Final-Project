@@ -6,5 +6,10 @@ let tile_size = 40
    radius of a piece. *)
 let pc_size = 10
 
+(**[start_x] is a constant used in resizing the game window for
+   different boards.*)
 let start_x = 130
+
+(**[start_y] is a constant used in resizing the game window for
+   different boards.*)
 let start_y = 80

@@ -1,1 +1,30 @@
-{"board":{"tiles":[{"player":2,"id":12,"tile":15,"is_royal":true},{"player":1,"id":3,"tile":20,"is_royal":false},{"player":1,"id":6,"tile":22,"is_royal":true}],"columns":6,"rows":6},"turn":1,"player 1 score":0,"player 2 score":0,"preset":0}
+{
+  "board": {
+    "tiles": [
+      {
+        "player": 2,
+        "id": 12,
+        "tile": 15,
+        "is_royal": true
+      },
+      {
+        "player": 1,
+        "id": 3,
+        "tile": 20,
+        "is_royal": false
+      },
+      {
+        "player": 1,
+        "id": 6,
+        "tile": 22,
+        "is_royal": true
+      }
+    ],
+    "columns": 6,
+    "rows": 6
+  },
+  "turn": 1,
+  "player 1 score": 0,
+  "player 2 score": 0,
+  "preset": 0
+}
