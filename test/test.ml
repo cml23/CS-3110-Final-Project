@@ -11,7 +11,7 @@ open Yojson
    Board and State modules, and the graphical nature of the Canvas
    module - our team has opted for black box and play testing.*)
 (* The Board and State modules were subject to both black box and
-   playtesting. Canvas was playtested. *)
+   playtesting. Canvas and certain features in State were playtested. *)
 
 (* Add helper functions for testing Board here.*)
 
