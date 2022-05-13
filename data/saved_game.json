@@ -2,34 +2,28 @@
   "board": {
     "tiles": [
       {
-        "player": 1,
-        "id": 1,
-        "tile": 1,
-        "is_royal": false
-      },
-      {
-        "player": 1,
-        "id": 2,
-        "tile": 3,
-        "is_royal": false
+        "player": 2,
+        "id": 12,
+        "tile": 15,
+        "is_royal": true
       },
       {
         "player": 1,
         "id": 3,
-        "tile": 24,
+        "tile": 20,
         "is_royal": false
       },
       {
         "player": 1,
-        "id": 4,
-        "tile": 25,
-        "is_royal": false
+        "id": 6,
+        "tile": 22,
+        "is_royal": true
       }
     ],
-    "columns": 4,
-    "rows": 10
+    "columns": 6,
+    "rows": 6
   },
-  "turn": 2,
+  "turn": 1,
   "player 1 score": 0,
   "player 2 score": 0,
   "preset": 0

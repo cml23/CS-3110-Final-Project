@@ -1,3 +1,4 @@
+exception NoMove
 (** Compilation module that encompasses AI decision.*)
 
 val make_mv : State.t -> State.turn

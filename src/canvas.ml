@@ -21,7 +21,7 @@ type preset = {
    player.*)
 
 (**[preset_skeleton] is the skeleton on which all presets are based,
-   with fields initialized to zero so as to avoid image loading errors.*)
+   with fields initialized to None so as to avoid image loading errors.*)
 let preset_skeleton =
   {
     image_paths = Array.make 7 (Png.load_as_rgb24 "data/tile1.png" []);
@@ -130,8 +130,8 @@ let swap_index (tile_index : int) = if tile_index = 0 then 1 else 0
    [default] preset.*)
 let current_preset = ref 0
 
-(**[draw_piece_img img x y] draws the specified image to the appropriate
-   part of the canvas.*)
+(**[draw_img img x y] draws the specified image to the appropriate part
+   of the canvas.*)
 let draw_img (img : Graphics.image option) (x : int) (y : int) =
   match img with
   | None -> ()
@@ -147,23 +147,13 @@ let draw_piece
     (tile_size : int)
     (p : preset) : unit =
   let open Graphics in
+  let draw_pos = Constants.pc_size / 2 in
   if pc.player = 1 then
-    if pc.is_royal then
-      draw_img p.royal
-        (x + (Constants.pc_size / 2))
-        (y + (Constants.pc_size / 2))
-    else
-      draw_img p.soldier
-        (x + (Constants.pc_size / 2))
-        (y + (Constants.pc_size / 2))
+    if pc.is_royal then draw_img p.royal (x + draw_pos) (y + draw_pos)
+    else draw_img p.soldier (x + draw_pos) (y + draw_pos)
   else if pc.is_royal then
-    draw_img p.royal2
-      (x + (Constants.pc_size / 2))
-      (y + (Constants.pc_size / 2))
-  else
-    draw_img p.soldier2
-      (x + (Constants.pc_size / 2))
-      (y + (Constants.pc_size / 2))
+    draw_img p.royal2 (x + draw_pos) (y + draw_pos)
+  else draw_img p.soldier2 (x + draw_pos) (y + draw_pos)
 
 (**[draw_tile x y row col b tile_size color] draws the tile of board [b]
    at board index [(row,col)] with the image from the preset [p]'s
@@ -179,7 +169,7 @@ let rec draw_tile
     (p : preset)
     (tile_index : int) : unit =
   match p.tiles.(tile_index) with
-  | None -> print_endline "NOne"
+  | None -> ()
   | Some v -> (
       Graphics.draw_image v x y;
       match Board.piece_of_xy b row col with
@@ -236,6 +226,8 @@ let get_coordinate i dim_start =
   /. float_of_int Constants.tile_size
   |> Float.floor |> ( +. ) 1. |> int_of_float
 
+(**[start_dim] is the [(x,y)] position where the board should begin
+   being drawn to the Canvas.*)
 let start_dim graphics_dim board_dim b =
   (graphics_dim () - (board_dim b * Constants.tile_size)) / 2
 
@@ -301,8 +293,11 @@ let draw_turn_img (player : int) x y =
   if player = 1 then draw_img !turn1_img x y
   else draw_img !turn2_img x y
 
+(**[draw_score p1_score p2_score x y] draws the multi-game score to the
+   canvas.*)
 let draw_score p1_score p2_score x y =
   Graphics.moveto x y;
+  Graphics.set_color Graphics.black;
   Graphics.draw_string
     (string_of_int p1_score ^ " : " ^ string_of_int p2_score)
 
@@ -341,7 +336,7 @@ let draw_new_game i p1_score p2_score st =
   init b;
   Graphics.clear_graph ();
   let start_y = start_dim Graphics.size_y Board.dim_y b in
-  draw_score 0 0
+  draw_score p1_score p2_score
     (Graphics.size_x () / 2)
     (start_y + (Board.dim_y b * Constants.tile_size) + 10);
   draw i st

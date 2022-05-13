@@ -112,7 +112,7 @@ val match_turn :
   (t -> 'a) ->
   turn ->
   'a
-(** [match_turn cf lf ilf uf rf] takes 5 different draw functions that
+(** [match_turn cf lf ilf uf rf] takes 5 different functions that
     will be called depending on the type of turn returned by state. *)
 
 val get_state : turn -> t
