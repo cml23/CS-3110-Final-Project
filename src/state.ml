@@ -19,7 +19,7 @@ type move = {
   cap_pc : piece option;
   mc_pres : bool;
 }
-(** Grouped in a stack. *)
+(** Grouped in a stack implemented as a list. *)
 
 type t = {
   board : Board.t;
@@ -72,7 +72,9 @@ let get_caps (state : t) : (int * int) list = fst state.caps
 
 let unselected (state : t) : bool = state.sel = (-1, -1)
 
-let selected (state : t) : int * int = state.sel
+let selected_coord (state : t) : int * int = state.sel
+
+let selected_pc (state : t) : piece option = state.sel_pc
 
 let get_if_mc (state : t) : bool = state.mc_pres
 

@@ -297,8 +297,6 @@ let string_of_move (mv : Game.State.move) =
 
 let print_urdos (mvs : move list) =
   "[ " ^ String.concat "; " (List.map string_of_move mvs) ^ " ]"
-(* let rec print_move (move : Game.State.move) = match move with | _ ->
-   print_state (move state) *)
 
 let test_maker (i : string) (s : string) (p : 'a -> string) a a' =
   i ^ s >:: fun _ -> assert_equal a a' ~printer:p
@@ -328,7 +326,7 @@ let selected_test
     (state : Game.State.t)
     (exp_out : int * int) : test =
   name >:: fun _ ->
-  assert_equal exp_out (selected state) ~printer:string_of_tuple
+  assert_equal exp_out (selected_coord state) ~printer:string_of_tuple
 
 let suc = List.sort_uniq compare
 
@@ -342,9 +340,11 @@ let getter_test
     (getter state |> suc)
     ~printer:string_of_tuple_list
 
-let if_mc_test (name : string) (state : Game.State.t) (exp_out : bool) :
+let mv_test (name : string) (state : Game.State.t) (exp_out : move) :
     test =
-  name >:: fun _ -> assert_equal exp_out (get_if_mc state)
+  test_maker name "" string_of_move
+    (state |> get_undos |> List.hd)
+    exp_out
 
 let new_state (coord : int * int) (state : Game.State.t) : Game.State.t
     =
@@ -435,9 +435,9 @@ let basic_tests =
     (* urdo_test "P2 State: Undo is {s: (3, 3), f: (4, 4)}" move_state
        Game.State.get_undos m1; *)
     game_over_test "P2 State: game_over" move_state false;
-    int_test get_vc "P2 State: victor" move_state 0;
-    int_test get_player "P2 State: player nunber" move_state 2;
-    bool_test "P2 State: unselected" move_state true;
+    int_test "P2 State: victor" get_vc move_state 0;
+    int_test "P2 State: player nunber" get_player move_state 2;
+    bool_test "P2 State: unselected" unselected move_state true;
     selected_test "P2 State: selected" move_state (-1, -1);
     getter_test "P2 State: moves" move_state get_moves [];
     getter_test "P2 State: captures" move_state get_caps [];
@@ -463,9 +463,9 @@ let cap_tests =
   [
     (* P1 can capture.*)
     game_over_test "P1 Capture State: game_over" cap_state false;
-    int_test get_vc "P1 Capture State: victor" cap_state 0;
-    int_test get_player "P1 Capture State: player nunber" cap_state 1;
-    bool_test "P1 Capture State: unselected" cap_state false;
+    int_test "P1 Capture State: victor" get_vc cap_state 0;
+    int_test "P1 Capture State: player nunber" get_player cap_state 1;
+    bool_test "P1 Capture State: unselected" unselected cap_state false;
     selected_test "P1 Capture State: selected" cap_state (4, 4);
     getter_test "P1 Capture State: moves" cap_state get_moves [ (3, 5) ];
     getter_test "P1 Capture State: captures" cap_state get_caps
@@ -504,23 +504,53 @@ let mc_tests =
   [
     (* P2 has just captured, another capture is available.*)
     game_over_test "P2 MC State: game_over" mc_state false;
-    int_test get_vc "P2 MC State: victor" mc_state 0;
-    int_test get_player "P2 MC State: player number" mc_state 2;
-    bool_test "P2 MC State: unselected" mc_state false;
+    int_test "P2 MC State: victor" get_vc mc_state 0;
+    int_test "P2 MC State: player number" get_player mc_state 2;
+    bool_test "P2 MC State: unselected" unselected mc_state false;
     selected_test "P2 MC State: selected" mc_state (2, 4);
     getter_test "P2 MC State: moves" mc_state get_moves [];
     getter_test "P2 MC State: captures" mc_state get_caps [ (4, 2) ];
     urdo_len_test "P2 MC State: # undoes" mc_state Game.State.get_undos
       6;
     (* Testing move is impossible due to unknown piece. *)
-    if_mc_test "P2 MC State: state.mc is true" mc_state true;
+    bool_test "P2 MC State: state.mc is true" get_if_mc mc_state true;
     update_test "P2 MC State: select (2, 4) is illegal" mc_state (2, 4)
       assert_illegal;
     update_test "P2 MC State 2: select (4, 2) is legal" mc_state (4, 2)
       assert_legal;
     urdo_len_test "P2 MC State: # undos" mc_state2 Game.State.get_undos
       7;
-    int_test get_player "P2 MC State 2: player number" mc_state2 1;
+    int_test "P2 MC State 2: player number" get_player mc_state2 1;
+  ]
+
+(*=========MOVE CONSTRUCTION TEST=========*)
+
+let mv1 =
+  {
+    start = (3, 3);
+    finish = (4, 4);
+    pc = matcher (selected_pc selected_state);
+    cap_sq = (-1, -1);
+    cap_pc = None;
+    mc_pres = false;
+  }
+
+let post_cap_state = cap_state |> new_state (6, 6)
+
+let cp1 =
+  {
+    start = (4, 4);
+    finish = (6, 6);
+    pc = matcher (selected_pc cap_state);
+    cap_sq = (5, 5);
+    cap_pc = piece_of_xy (cap_state |> get_board) 5 5;
+    mc_pres = false;
+  }
+
+let mv_tests =
+  [
+    mv_test "Non capture move" move_state mv1;
+    mv_test "Capture move" post_cap_state cp1;
   ]
 
 (*=========UNDO & REDO TESTS=========*)
@@ -535,29 +565,36 @@ let r1_state = u2_state |> urdo false |> get_state
 let urdo_tests =
   [
     (* Undo second capture in multicapture *)
-    int_test get_player "P2 MC Undo 1: player number" u1_state 2;
-    bool_test "P2 MC Undo 1: unselected" u1_state false;
+    int_test "P2 MC Undo 1: player number" get_player u1_state 2;
+    bool_test "P2 MC Undo 1: unselected" unselected u1_state false;
     selected_test "P2 MC Undo 1: selected" u1_state (2, 4);
     getter_test "P2 MC Undo 1: moves" u1_state get_moves [];
     getter_test "P2 MC Undo 1: captures" u1_state get_caps [ (4, 2) ];
     urdo_len_test "P2 MC Undo 1: # undos" u1_state Game.State.get_undos
       6;
     (* Undo 1st capture in multicapture *)
-    int_test get_player "P1 Undo MC Undo 2: player number" u2_state 2;
-    bool_test "P1 MC Undo 2: unselected" u2_state true;
+    int_test "P1 Undo MC Undo 2: player number" get_player u2_state 2;
+    bool_test "P1 MC Undo 2: unselected" unselected u2_state true;
     selected_test "P1 MC Undo 2: selected" u2_state (-1, -1);
     getter_test "P1 MC Undo 2: moves" u2_state get_moves [];
     getter_test "P1 MC Undo 2: captures" u2_state get_caps [];
     urdo_len_test "P1 MC Undo 2: # undos" u2_state Game.State.get_undos
       5;
     (* Undo to player 1 move, check for no changes *)
-    int_test get_player "P2 Undo 3: player number" u3_state 1;
-    bool_test "P2 Undo 3: unselected" mc_state false;
-    selected_test "P2 Undo 3: selected" mc_state (-1, -1);
-    getter_test "P2 Undo 3: moves" mc_state get_moves [];
-    getter_test "P2 Undo 3: captures" mc_state get_caps [];
-    urdo_len_test "P2 Undo 3: # undoes" mc_state Game.State.get_undos 4;
+    int_test "P2 Undo 3: player number" get_player u3_state 1;
+    bool_test "P2 Undo 3: unselected" unselected u3_state true;
+    selected_test "P2 Undo 3: selected" u3_state (-1, -1);
+    getter_test "P2 Undo 3: moves" u3_state get_moves [];
+    getter_test "P2 Undo 3: captures" u3_state get_caps [];
+    urdo_len_test "P2 Undo 3: # undoes" u3_state Game.State.get_undos 4;
     (* Redo 1st capture in multicapture, check multicapture invariant *)
+    int_test "P2 MC Undo 1: player number" get_player r1_state 2;
+    bool_test "P2 MC Undo 1: unselected" unselected r1_state false;
+    selected_test "P2 MC Undo 1: selected" r1_state (2, 4);
+    getter_test "P2 MC Undo 1: moves" r1_state get_moves [];
+    getter_test "P2 MC Undo 1: captures" r1_state get_caps [ (4, 2) ];
+    urdo_len_test "P2 MC Undo 1: # undos" r1_state Game.State.get_undos
+      6;
   ]
 
 (*=========VICTOR TESTS=========*)
@@ -573,6 +610,7 @@ let suite =
            basic_tests;
            cap_tests;
            mc_tests;
+           mv_tests;
            urdo_tests;
            canvas_tests;
          ]

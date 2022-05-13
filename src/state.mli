@@ -54,8 +54,12 @@ val get_caps : t -> (int * int) list
 val unselected : t -> bool
 (** [unselected t] returns whether a tile has been selected. *)
 
-val selected : t -> int * int
-(** [selected t] returns the tile that has been selected. *)
+val selected_coord : t -> int * int
+(** [selected_coord t] returns the tile that has been selected. *)
+
+val selected_pc : t -> piece option
+(** [select_pc t] returns the piece that have been selected and [None]
+    otherwise. *)
 
 val get_if_mc : t -> bool
 (** [get_if_mc t] returns whether the state is in multicapture mode or
@@ -69,7 +73,13 @@ val get_redos : t -> move list
 (** [get_redos state] returns the possible redos for the current state.
     For testing purposes. *)
 
+val matcher : 'a option -> 'a
+(** [matcher a] returns the value stored in [a] if [a] is [Some v] and
+    throws an expection otherwise. *)
+
 val get_xy_of_pc : piece -> Board.t -> int * int
+(** [get_xy_of_pc pc bd] is a wrapper function for the board function
+    that throws exception [NoPiece] the piece does not exist. *)
 
 (** [turn] represents the type of state returned. Continue represents
     that the current player stays the same and requires new input. Legal
