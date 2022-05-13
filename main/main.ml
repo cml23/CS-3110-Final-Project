@@ -62,7 +62,7 @@ let save_game (g : t) (name : string) : unit =
 
 let change_st (chg : 'a -> State.t -> State.turn) (v : 'a) (game : t) :
     t =
-  let nt = chg v game.state in 
+  let nt = chg v game.state in
   { game with state = State.get_state nt; turn = nt }
 
 let process_mv (coord : int * int) (game : t) : t =
@@ -170,11 +170,10 @@ let rec load_game (use_ai : bool) (f : string) =
 
 (**[print_name_list lst] prints the preset list of player names given in
    [lst] to the terminal.*)
-let rec print_name_list = function
-  | [] -> print_endline ""
-  | h :: t ->
-      if h <> "AI" then print_endline ("-" ^ h) else ();
-      print_name_list t
+let rec print_name_list lst =
+  let player_names = List.filter (fun name -> name <> "AI") lst in
+  List.iter (fun name -> print_endline ("-" ^ name)) player_names;
+  print_endline ""
 
 (**[get_name loader] assigns the name input by the user to a player if
    it is a valid name choice (based on the preset list given in
