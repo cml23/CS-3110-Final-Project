@@ -13,11 +13,8 @@ type t = {
 
 (* [default_game]*)
 let file_format = ".json"
-
 let default_game = "default_layout"
-
 let data_dir_prefix = "data" ^ Filename.dir_sep
-
 let game_name = ref (data_dir_prefix ^ "default_layout" ^ file_format)
 
 (*=========LOADERS=========*)
@@ -81,16 +78,11 @@ let urdo_mv (undo : bool) (game : t) : t =
   change_st State.urdo undo game
 
 let change_sc (p1_win : bool) (game : t) : t =
-  let new_game =
-    {
-      game with
-      p1_sc = (game.p1_sc + if p1_win then 1 else 0);
-      p2_sc = (game.p2_sc + if not p1_win then 1 else 0);
-    }
-  in
-  print_endline (string_of_int new_game.p1_sc);
-  print_endline (string_of_int new_game.p2_sc);
-  new_game
+  {
+    game with
+    p1_sc = (game.p1_sc + if p1_win then 1 else 0);
+    p2_sc = (game.p2_sc + if not p1_win then 1 else 0);
+  }
 
 let restart_gm (game : t) : t =
   let new_state =
@@ -106,7 +98,8 @@ let check_win (game : t) : t =
     let new_sc_game =
       game |> change_sc (game |> is_p1_win) |> restart_gm
     in
-    Canvas.draw_new_game game.preset game.p1_sc game.p2_sc game.state;
+    Canvas.draw_new_game new_sc_game.preset new_sc_game.p1_sc
+      new_sc_game.p2_sc new_sc_game.state;
     new_sc_game)
   else game
 

@@ -297,6 +297,7 @@ let draw_turn_img (player : int) x y =
    canvas.*)
 let draw_score p1_score p2_score x y =
   Graphics.moveto x y;
+  Graphics.set_color Graphics.black;
   Graphics.draw_string
     (string_of_int p1_score ^ " : " ^ string_of_int p2_score)
 
@@ -335,7 +336,7 @@ let draw_new_game i p1_score p2_score st =
   init b;
   Graphics.clear_graph ();
   let start_y = start_dim Graphics.size_y Board.dim_y b in
-  draw_score 0 0
+  draw_score p1_score p2_score
     (Graphics.size_x () / 2)
     (start_y + (Board.dim_y b * Constants.tile_size) + 10);
   draw i st
