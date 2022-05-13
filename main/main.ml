@@ -72,11 +72,16 @@ let urdo_mv (undo : bool) (game : t) : t =
   change_st State.urdo undo game
 
 let change_sc (game : t) : t =
-  {
-    game with
-    p1_sc = game.p1_sc + State.get_pts 1 game.state;
-    p2_sc = game.p2_sc + State.get_pts 2 game.state;
-  }
+  let new_game =
+    {
+      game with
+      p1_sc = game.p1_sc + State.get_pts 1 game.state;
+      p2_sc = game.p2_sc + State.get_pts 2 game.state;
+    }
+  in
+  print_endline (string_of_int new_game.p1_sc);
+  print_endline (string_of_int new_game.p2_sc);
+  new_game
 
 let restart_gm (game : t) : t =
   {
@@ -130,13 +135,20 @@ let rec game_loop (e : Graphics.status) (game : t) : _ =
   (* if State.game_over game.state then let game = (change_sc game); *)
   draw_st game;
   draw_turn game;
-  if game.use_ai && State.get_player game.state = 2 then (
-    let new_turn = Ai.make_mv game.state in
-    Unix.sleep 1;
-    let new_game =
-      { game with turn = new_turn; state = State.get_state new_turn }
-    in
-    game_loop e new_game)
+  if game.use_ai && State.get_player game.state = 2 then
+    try
+      let new_turn = Ai.make_mv game.state in
+      Unix.sleep 1;
+      let gm =
+        { game with turn = new_turn; state = State.get_state new_turn }
+      in
+      game_loop e gm
+    with
+    | Game.Ai.NoMove ->
+        let gm = change_sc game in
+        let gm' = restart_gm gm in
+        game_loop e gm'
+    | current_game -> ()
   else if e.button then highlight e game
   else ();
   event_handler gl_ref game
