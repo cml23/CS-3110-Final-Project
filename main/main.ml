@@ -10,6 +10,9 @@ type t = {
   preset : int;
   use_ai : bool;
 }
+(** Type for the game that keeps track of player score, the state of the
+    board, the type of turn that has just occurred, the visual preset
+    being used, and whether ai is in use or not. *)
 
 let file_format = ".json"
 (* [fileformat] is the file type for saved files. *)
@@ -102,16 +105,11 @@ let urdo_mv (undo : bool) (game : t) : t =
     is [true] and for player 2 otherwise. Precondition: the game is
     over. *)
 let change_sc (p1_win : bool) (game : t) : t =
-  let new_game =
-    {
-      game with
-      p1_sc = (game.p1_sc + if p1_win then 1 else 0);
-      p2_sc = (game.p2_sc + if not p1_win then 1 else 0);
-    }
-  in
-  print_endline (string_of_int new_game.p1_sc);
-  print_endline (string_of_int new_game.p2_sc);
-  new_game
+  {
+    game with
+    p1_sc = (game.p1_sc + if p1_win then 1 else 0);
+    p2_sc = (game.p2_sc + if not p1_win then 1 else 0);
+  }
 
 (** [restart_gm game] reloads the game based on the file name selected. *)
 let restart_gm (game : t) : t =
@@ -124,14 +122,6 @@ let restart_gm (game : t) : t =
     for screen recoloring. *)
 let change_preset (game : t) : t =
   { game with preset = Game.Canvas.swap_preset game.preset }
-
-(** [forfeit game] restarts the board so the player who did not forfeit
-    gains one point in score. *)
-let forfeit (game : t) : t =
-  let p1w =
-    if game.state |> State.get_player = 1 then false else true
-  in
-  game |> change_sc p1w |> restart_gm
 
 (*=========DRAW FUNCTIONS========*)
 
@@ -149,21 +139,30 @@ let draw_sc (game : t) : _ =
 let highlight (e : Graphics.status) (game : t) : _ =
   game.state |> State.get_board |> Canvas.highlight e
 
+let draw_sc_pipeline (p1w : bool) (game : t) : t =
+  let nsc_gm = game |> change_sc p1w |> restart_gm in
+  draw_sc nsc_gm;
+  nsc_gm
+
 (*=========GAME LOOP=========*)
 (* [glref event game] stores [game_loop] as a reference to allow access
    throughout the program. *)
 let gl_ref = ref (fun a b -> ())
+
+(** [forfeit game] restarts the board so the player who did not forfeit
+    gains one point in score. *)
+let forfeit (game : t) : t =
+  let p1w =
+    if game.state |> State.get_player = 1 then false else true
+  in
+  game |> draw_sc_pipeline p1w
 
 (** [check_win glref e game] checks for two player games whether one
     player can move or not and updates the score accordingly. *)
 let check_win glref (e : Graphics.status) (game : t) : _ =
   if game.state |> State.game_over then (
     Unix.sleepf 1.0;
-    let new_sc_game =
-      game |> change_sc (game |> is_p1_win) |> restart_gm
-    in
-    draw_sc new_sc_game;
-    !gl_ref e new_sc_game)
+    game |> draw_sc_pipeline (game |> is_p1_win) |> !gl_ref e)
 
 (** [check_ai glref e game] makes a move with the AI if the player has
     opted for PvE. Also checks for the win condition when the AI cannot
@@ -180,9 +179,7 @@ let check_ai glref (e : Graphics.status) (game : t) : _ =
     with
     | Game.Ai.NoMove ->
         Unix.sleepf 1.0;
-        let new_sc_game = game |> change_sc true |> restart_gm in
-        draw_sc new_sc_game;
-        !glref e new_sc_game
+        game |> draw_sc_pipeline true |> !glref e
     | current_game -> ()
 
 (* [event_handler glref game] performs operations on the game state
