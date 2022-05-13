@@ -19,11 +19,12 @@ val p2_name : string ref
 (**[p2_name] is the name selected by Player 2.*)
 
 val init : Board.t -> unit
-(**[init] initializes the Canvas and loads the images for all presets.*)
+(**[init b] initializes the Canvas with board [b] and loads the images
+   for all presets.*)
 
 val draw : int -> State.t -> unit
 (**[draw idx st] draws all elements associated with the preset numbered
-   [idx] to the game canvas.*)
+   [idx] and state [st] to the game canvas.*)
 
 val draw_new_game : int -> int -> int -> State.t -> unit
 (**[draw preset p1_score p2_score st] draws a new game, with an updated
@@ -31,8 +32,9 @@ val draw_new_game : int -> int -> int -> State.t -> unit
    games.*)
 
 val mouse_input : Graphics.status -> Board.t -> (int * int) option
-(**[mouse_input ev] is the [(x,y)] coordinate of the tile clicked by the
-   user, or None if there is no tile at the position clicked. *)
+(**[mouse_input ev b] is the [(x,y)] coordinate specified by the event
+   handler [ev] of the tile clicked by the user on Board [b], or None if
+   there is no tile at the position clicked. *)
 
 val highlight : Graphics.status -> Board.t -> unit
 (**[highlight ev b] highlights the piece clicked by the user in green. *)

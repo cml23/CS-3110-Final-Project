@@ -123,6 +123,8 @@ let turn2_img : Graphics.image option ref = ref None
 let swap_preset idx =
   if idx + 1 > Array.length active_presets - 1 then 0 else idx + 1
 
+(**[swap_index] swaps the [tile_index] to that of the next tile that
+   will be drawn.*)
 let swap_index (tile_index : int) = if tile_index = 0 then 1 else 0
 
 (**[current_preset] represents the preset from [active_presets] that is
