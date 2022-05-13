@@ -19,14 +19,18 @@ Other versions may work but only this version has been tested.
 opam install yojson
 opam install ANSITerminal
 opam install onunit2
-opam install camlimages
 ```
-#### Installing Graphics for Windows:
+#### Installing Graphics and CamlImages for Windows:
 ``` console
 sudo apt-get install pkg-config
 opam install graphics
 opam install user-setup
 opam user-setup install
+```
+``` console
+sudo apt-get install libgtk2.0-dev
+opam install lablgtk
+opam install camlimages
 ```
 Follow these instructions to download an X-server: https://www.youtube.com/watch?v=4SZXbl9KVsw
 ``` console
@@ -37,6 +41,7 @@ export LIBGL_ALWAYS_INDIRECT=1
 #### Installing Graphics for MacOS:
 ``` console
 opam install graphics
+opam install camlimages
 ```
 Computer restart may be necessary after installation.
 
@@ -44,4 +49,4 @@ Computer restart may be necessary after installation.
 - Clone this repository
 - `cd` to the cloned folder
 - Run `make play` to start the game
-- When the terminal asks for a filename type `default_board`
+- When the terminal asks for a filename type `default`

@@ -23,11 +23,11 @@ eval $(opam env)
 export DISPLAY=$(awk '/nameserver / {print $2; exit}' /etc/resolv.conf 2>/dev/null):0
 export LIBGL_ALWAYS_INDIRECT=1
 
-
 If you are running MacOS, you will need to run the following commands
 in the terminal:
 
 opam install graphics
+opam install camlimages
 
 Next, for MacOS and Windows you will need to also run the following commands:
 opam install yojson
