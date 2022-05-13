@@ -11,7 +11,15 @@ open Yojson
    Board and State modules, and the graphical nature of the Canvas
    module - our team has opted for black box and play testing.*)
 (* The Board and State modules were subject to both black box and
-   playtesting. Canvas and certain features in State were playtested. *)
+   playtesting. Canvas features were playtested. *)
+(* This testing approach demonstrates the correctness of the system
+   because while black box testing covers fundamental behavior necessary
+   for our game (e.g. adding or removing a piece, moving a piece given
+   information, undoing and redoing), playtesting ensures all parts of
+   the system work together during application. Additionally,
+   playtesting reveals edge cases in both rules and victory conditions
+   that are subsequently accounted for (e.g. undoing a multicapture
+   results in strange behavior, score tally not updating). *)
 
 (* Add helper functions for testing Board here.*)
 

@@ -49,4 +49,4 @@ Computer restart may be necessary after installation.
 - Clone this repository
 - `cd` to the cloned folder
 - Run `make play` to start the game
-- When the terminal asks for a filename type `default`
+- Follow the instructions printed in the terminal
